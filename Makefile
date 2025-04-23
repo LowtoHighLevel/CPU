@@ -11,16 +11,20 @@ SRCS=src/main.c \
 
 .PHONY: all clean main target
 
-all: clean main
+all: clean main target/gen
 
-main: target target/main
+main: target target/emu
 
 target:
 	@mkdir -p target
 
-target/main: $(SRCS)
+target/emu: $(SRCS)
 	@$(CC) $(CFLAGS) -o $@ $(SRCS)
 	@echo "Compiled: $@ from $(SRCS)"
 clean:
 	@rm -rf target
+	@rm -f out.bin
 	@echo "Cleaned all files!"
+
+target/gen: gen.c
+	@$(CC) -o $@ $<
