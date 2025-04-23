@@ -2,15 +2,7 @@
 #include <cpu.h>
 #include <regs.h>
 #include <mem.h>
-
-
-void print_binary(unsigned int val) {
-  for (int i = 31; i >= 0; i--) {
-    printf("%u", (val >> i) & 0b1);
-  }
-}
-
-
+#include <string.h>
 
 void write_next(unsigned int * addr, unsigned int val) {
   write_rom(*addr, val);
@@ -41,17 +33,21 @@ int main(int argc, char * argv[]) {
   
 
   addr = 0;
-  
-  for (int i = 0; i < num_cmds; i++) {
-    run_cmd(&addr, &carry, &zero, &overflow, &neg);
-  }
-  
-  printf("Registers: \n");
-  for (int i = 0; i < 32; i++) {
-    printf("reg%d: %u\n", i, read_reg(i));
-  }
-  printf("\n)");
 
+  while (read_reg(30) != 36000) {
+      run_cmd(&addr, &carry, &zero, &overflow, &neg);
+  }
+
+  if (argc > 2 && strcmp(argv[2], "-r") == 0) {
+    printf("Registers: \n");
+    for (int i = 0; i < 32; i++) {
+      printf("reg%d: %u\n", i, read_reg(i));
+    }
+    printf("\n)");
+  }
+  
+  
+  
   return 0;
 }
 

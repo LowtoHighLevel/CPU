@@ -67,7 +67,7 @@ void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control, bit* ca
     *carry = carry_in;
   }
 
-  *neg = b[length - 1] & 0b1;
+  *neg = b[length - 1];
 }
 
 

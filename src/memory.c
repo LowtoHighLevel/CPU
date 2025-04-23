@@ -30,8 +30,8 @@ unsigned int read_mem(unsigned int addr) {
 }
 
 void write_char_mem(unsigned int addr, unsigned char val) {
-  if (addr  < ((1024 * 4) + (1024 * 8))) {
-    rom[(addr - (1024 * 4))] = val;
+  if (addr < ((1024 * 4) + (1024 * 8)) && addr > (1024 * 4)) {
+    ram[(addr - (1024 * 4))] = val;
   } else {
     if (addr == 1024 * 16) {
       printf("%c", (char)val);

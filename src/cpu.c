@@ -35,6 +35,12 @@ void parse_op(unsigned int op, unsigned char * typ, unsigned char* control, unsi
     *reg2 = (unsigned char)((op >> 8) & 0xFF);
     *reg3 = 0;
     *imm = 0;
+  } else {
+    *control =  (unsigned char)((op >> 24) & 0b11111);
+    *reg1 = 0;
+    *reg2 = 0;
+    *reg3 = 0;
+    *imm = 0;
   }
 }
 
@@ -53,8 +59,9 @@ void aluop(unsigned int x, unsigned int y, unsigned char control, unsigned char 
 
   alu_op(a, b, 32, c, control, carry, overflow, neg);
 
-  
+
   *out = bit_to_int(c);
+  *zero = *out == 0;
 }
 
 void write_back(unsigned char reg, unsigned int data) {
@@ -71,6 +78,16 @@ unsigned char condition(unsigned char control, unsigned char carry, unsigned cha
 	  );
 }
 
+union short_ushort {
+  short s;
+  unsigned short us;
+};
+
+union int_uint {
+  int i;
+  unsigned int ui;
+};
+
 void run_cmd(unsigned int * addr, unsigned char * carry, unsigned char * zero, unsigned char * overflow, unsigned char * neg) {
 
   unsigned int cmd = 0;
@@ -81,28 +98,36 @@ void run_cmd(unsigned int * addr, unsigned char * carry, unsigned char * zero, u
   unsigned int d1, d2, d3;
   read_data(reg1, reg2, &d1, &d2);
 
-  unsigned int rel = cmd & 0xFFFFF;
+  union short_ushort rel;
+  rel.us = (cmd & 0xFFFF);
   unsigned char check = condition(control, *carry, *zero, *overflow, *neg);
-  if (typ == 0b100 && check) {
-    *addr = (rel << 2);   
-  } else if (typ == 0b101 && check) {
-    *addr = d1;
-  } else {
-    aluop(d1, d2, control, carry, zero, overflow, neg, &d3);
-  }
-  
-  if (typ == 0b000) {
-    write_back(reg3, d3);
-  } else if (typ == 0b001) {
-    write_back(reg3, imm);
-  } else if (typ == 0b010) {
-    d3 = read_mem(d1);
-    write_back(reg3, d3);
-  } else if (typ == 0b011) {
-    write_mem(d1, d2);
-    write_back(reg3, d3);  
-  }
 
-  *addr += 4;
-  
+  if (typ >= 0b100) {
+    if (typ == 0b100 && check) {
+      union int_uint iui;
+      
+      iui.ui = *addr;
+      iui.i += (rel.s * 4);
+      *addr = iui.ui;
+    } else if (typ == 0b101 && check) {
+      *addr = d1;
+    } else {
+      *addr += 4;
+    }
+  } else {
+     aluop(d1, d2, control, carry, zero, overflow, neg, &d3);
+     
+     if (typ == 0b000) {
+       write_back(reg3, d3);
+     } else if (typ == 0b001) {
+       write_back(reg3, imm);
+     } else if (typ == 0b010) {
+       d3 = read_mem(d1);
+       write_back(reg3, d3);
+     } else if (typ == 0b011) {
+       write_mem(d1, d2);
+     }
+     
+     *addr += 4;
+   }
 }
