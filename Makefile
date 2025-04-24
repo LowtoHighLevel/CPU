@@ -1,6 +1,12 @@
 CC=zig cc
 CFLAGS=-Iinclude
 
+OUTPUT=main
+ifeq ($(OS),Windows_NT)
+    OUTPUT = target/emu.exe
+endif
+
+
 SRCS=src/main.c \
      src/alu.c \
      src/regs.c \
@@ -11,9 +17,16 @@ SRCS=src/main.c \
 
 .PHONY: all clean main target
 
-all: clean main target/gen
+all: clean $(OUTPUT)
+
+
+target/emu.exe: main
+	@cp target/emu target/emu.exe
+	@echo "Created exe file"
 
 main: target target/emu
+
+
 
 target:
 	@mkdir -p target
@@ -25,6 +38,3 @@ clean:
 	@rm -rf target
 	@rm -f out.bin
 	@echo "Cleaned all files!"
-
-target/gen: gen.c
-	@$(CC) -o $@ $<
