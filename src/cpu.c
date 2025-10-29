@@ -24,7 +24,7 @@ void read_op(uint32_t addr, uint32_t* cmd) {
  * reg1-3 - pointers to register numbers
  * imm - pointer to immediate value
  */
-void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t* reg2, uint8_t* reg3, uint8_t* imm) {
+void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t* reg2, uint8_t* reg3, uint32_t* imm) {
 
   *typ = (uint8_t)((op >> CPU_OP_TYPE_POS) & 0b111);
   switch (*typ) {
@@ -34,6 +34,14 @@ void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_
       *reg2 = (uint8_t)((op >> 8) & 0xFF);
       *reg3 = (uint8_t)((op >> 0) & 0xFF);
       *imm = 0;
+      break;
+    }
+    case CPU_TYPE_IMM: {
+      *control = 0;
+      *reg1 = 0;
+      *reg2 = 0;
+      *reg3 = (uint8_t)((op >> 24) & 0b11111);
+      *imm = (op & 0xFFFFFF);
       break;
     }
     case CPU_TYPE_MEM_READ: {
