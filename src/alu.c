@@ -1,6 +1,7 @@
 #include <alu.h>
 #include <regs.h>
 #include <stdio.h>
+#include <defs.h>
 
 
 

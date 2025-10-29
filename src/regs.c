@@ -1,14 +1,14 @@
 #include <regs.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <defs.h>
 
 #define NUM_REGISTERS 32
-uint32_t regs[NUM_REGISTERS - 1];
+data_t regs[NUM_REGISTERS - 1];
 
 uint32_t flags;
 
-uint32_t read_reg(uint8_t reg) {
+data_t read_reg(uint8_t reg) {
   
   if (reg >= NUM_REGISTERS) {
     printf("Attempted to read invalid register: %u", reg);
@@ -23,7 +23,7 @@ uint32_t read_reg(uint8_t reg) {
   
 }
 
-void write_reg(uint8_t reg, uint32_t data) {
+void write_reg(uint8_t reg, data_t data) {
   
   if (reg >= NUM_REGISTERS) {
     printf("Attempted to write to invalid register: %u", reg);
@@ -53,10 +53,10 @@ void set_flags(uint32_t flags_in) {
   flags = flags_in;
 }
 
-uint32_t instruction_pointer() {
+data_t instruction_pointer() {
   return regs[30];
 }
 
-void set_instruction_pointer(uint32_t new_val) {
+void set_instruction_pointer(data_t new_val) {
   regs[30] = new_val;
 }

@@ -2,6 +2,7 @@
 #define __REGS_H
 
 #include <stdint.h>
+#include <defs.h>
 
 /**
  * Reads a value from a register
@@ -9,7 +10,7 @@
  * reg - register to read from
  * return - value in register reg
  */
-uint32_t read_reg(uint8_t reg);
+data_t read_reg(uint8_t reg);
 
 /**
  * Writes a value to a register
@@ -17,7 +18,7 @@ uint32_t read_reg(uint8_t reg);
  * reg - register to write to
  * data - value to write
  */
-void write_reg(uint8_t reg, uint32_t data);
+void write_reg(uint8_t reg, data_t data);
 
 /**
  * Flag types in flags
@@ -64,12 +65,12 @@ void set_flags(uint32_t flags_in);
  *
  * return - instruction pointer address
  */
-uint32_t instruction_pointer();
+data_t instruction_pointer();
 
 /**
  * Sets the instruction pointer's address.
  * 
  * new_val - new instruction pointer
  */
-void set_instruction_pointer(uint32_t new_val);
+void set_instruction_pointer(data_t new_val);
 #endif

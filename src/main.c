@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <defs.h>
 #include <cpu.h>
 #include <regs.h>
 #include <mem.h>
@@ -9,7 +10,7 @@
 /**
  * Write a value to rom and iter the address.
  */
-void write_next(uint32_t * addr, uint32_t val) {
+void write_next(data_t * addr, data_t val) {
   write_rom(*addr, val);
   *addr += 4;
 }
@@ -21,9 +22,7 @@ void write_next(uint32_t * addr, uint32_t val) {
 int main(int argc, char * argv[]) {
 
   // Current address in program
-  uint32_t addr = 0;
-
-
+  data_t addr = 0;
   
   uint8_t print_registers = 0;
   uint8_t input_type = 0;
@@ -43,6 +42,10 @@ int main(int argc, char * argv[]) {
     }
   }
 
+
+  instr_t cmds[4096];
+  int32_t num_cmds = 0;
+
   if (input_type == 1) {
     printf("Loading file: %s\n", argv[input_file_i]);
     // Try and open a binary file
@@ -53,33 +56,24 @@ int main(int argc, char * argv[]) {
     }
 
     // Store program in temporary ram
-    uint32_t cmds[4096];
-    int32_t num_cmds = fread(cmds, sizeof(uint8_t), 4096, ptr);
+    num_cmds = fread(cmds, sizeof(uint8_t), 4096, ptr);
     fclose(ptr);
 
     // write program to ROM.
-    for (int32_t i = 0; i < num_cmds; i++) {
-      write_next(&addr, cmds[i]);
-    }
+    
   } else if (input_type == 2) {
-    uint32_t cmds[4096];
-    int32_t num_cmds = argc - input_file_i;
+    num_cmds = argc - input_file_i;
     for (int i = input_file_i; i < argc; i++) {
       cmds[i-input_file_i] = (int)strtol(argv[i], NULL, 16);
-    }
-    for (int32_t i = 0; i < num_cmds; i++) {
-      write_next(&addr, cmds[i]);
     }
 
   } else {
     // Store program in temporary ram
-    uint32_t cmds[4096];
-    int32_t num_cmds = fread(cmds, sizeof(uint8_t), 4096, stdin);
+    num_cmds = fread(cmds, sizeof(uint8_t), 4096, stdin);
+  }
 
-    // write program to ROM.
-    for (int32_t i = 0; i < num_cmds; i++) {
-      write_next(&addr, cmds[i]);
-    }
+  for (int32_t i = 0; i < num_cmds; i++) {
+    write_next(&addr, cmds[i]);
   }
 
   init();

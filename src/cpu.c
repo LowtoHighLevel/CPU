@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <cpu.h>
+#include <defs.h>
 #include <regs.h>
 #include <alu.h>
 #include <mem.h>
@@ -11,8 +12,8 @@
  * addr - memory address
  * cmd - pointer to instruction
  */
-void read_op(uint32_t addr, uint32_t* cmd) {
-  *cmd = read_mem(addr);
+void read_op(data_t addr, instr_t* cmd) {
+  *cmd = read_instruction(addr);
 }
 
 /**
@@ -24,7 +25,7 @@ void read_op(uint32_t addr, uint32_t* cmd) {
  * reg1-3 - pointers to register numbers
  * imm - pointer to immediate value
  */
-void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t* reg2, uint8_t* reg3, uint32_t* imm) {
+void parse_op(instr_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t* reg2, uint8_t* reg3, data_t* imm) {
 
   *typ = (uint8_t)((op >> CPU_OP_TYPE_POS) & 0b111);
   switch (*typ) {
@@ -79,7 +80,7 @@ void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_
  * d1 - pointer to store register 1 data
  * d2 - pointer to store regisger 2 data
  */
-void read_data(uint8_t reg1, uint8_t reg2, uint32_t * d1, uint32_t * d2) {
+void read_data(uint8_t reg1, uint8_t reg2, data_t * d1, data_t * d2) {
   *d1 = read_reg(reg1);
   *d2 = read_reg(reg2);
 }
@@ -92,13 +93,13 @@ void read_data(uint8_t reg1, uint8_t reg2, uint32_t * d1, uint32_t * d2) {
  * control - control data
  * out - output value
  */
-void aluop(uint32_t x, uint32_t y, uint8_t control, uint32_t * out) {
-  bit a[32], b[32], c[32];
+void aluop(data_t x, data_t y, uint8_t control, data_t * out) {
+  bit a[DATA_WIDTH], b[DATA_WIDTH], c[DATA_WIDTH];
 
   int_to_bit(x, a);
   int_to_bit(y, b);
 
-  alu_op(a, b, 32, c, control);
+  alu_op(a, b, DATA_WIDTH, c, control);
 
   *out = bit_to_int(c);
   write_flag(FLAG_ZERO, *out == 0);
@@ -107,7 +108,7 @@ void aluop(uint32_t x, uint32_t y, uint8_t control, uint32_t * out) {
 /**
  * Writes back some data to a register
  */
-void write_back(uint8_t reg, uint32_t data) {
+void write_back(uint8_t reg, data_t data) {
   write_reg(reg, data);
 }
 
@@ -154,16 +155,15 @@ void init() {
 
 void run_cmd() {
   // Load the instruction and parse it
-  uint32_t cmd = 0;
+  instr_t cmd = 0;
   read_op(instruction_pointer(), &cmd);
-  printf("ip: %x, cmd: %x\n", instruction_pointer(), cmd);
  // printf("ip: %x, cmd: %x\n", instruction_pointer(), cmd);
   uint8_t typ, control, reg1, reg2, reg3;
-  uint32_t imm;
+  data_t imm;
   parse_op(cmd, &typ, &control, &reg1, &reg2, &reg3, &imm);
 
   // Read any registers that are needed
-  uint32_t d1, d2, d3;
+  data_t d1, d2, d3;
   read_data(reg1, reg2, &d1, &d2);
 
   // Get relative address

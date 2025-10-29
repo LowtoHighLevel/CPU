@@ -1,5 +1,7 @@
 #include <mem.h>
 #include <stdio.h>
+#include <defs.h>
+#include <stdint.h>
 
 #define ROM_SIZE 1024 * 4
 #define RAM_SIZE 1024 * 8
@@ -14,12 +16,17 @@ unsigned char ram[RAM_SIZE]; // 8k of RAM
 unsigned char scan_val;
 
 union int_to_char {
-  unsigned int ic_val;
-  unsigned char ic_char[4];
+  data_t ic_val;
+  uint8_t ic_char[sizeof(data_t)];
+};
+
+union instr_to_char {
+  instr_t ic_val;
+  uint8_t ic_char[sizeof(instr_t)];
 };
 
 
-void write_mem(unsigned int addr, unsigned int val) {
+void write_mem(data_t addr, data_t val) {
 
   union int_to_char data;
   data.ic_val = val;
@@ -29,16 +36,25 @@ void write_mem(unsigned int addr, unsigned int val) {
   }
 }
 
-unsigned int read_mem(unsigned int addr) {
-  union int_to_char data;
+instr_t read_instruction(data_t addr) {
+  union instr_to_char data;
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0 ; i < sizeof(instr_t); i++) {
     data.ic_char[i] = read_char_mem(addr + i);
   }
   return data.ic_val;
 }
 
-void write_char_mem(unsigned int addr, unsigned char val) {
+data_t read_mem(data_t addr) {
+  union int_to_char data;
+
+  for (int i = 0; i < sizeof(data_t); i++) {
+    data.ic_char[i] = read_char_mem(addr + i);
+  }
+  return data.ic_val;
+}
+
+void write_char_mem(data_t addr, uint8_t val) {
   if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     ram[(addr - RAM_ADDR)] = val;
   } else if (addr == CHAROUT_ADDR) {
@@ -46,7 +62,7 @@ void write_char_mem(unsigned int addr, unsigned char val) {
   }
 }   
 
-unsigned char read_char_mem(unsigned int addr) {
+unsigned char read_char_mem(data_t addr) {
   if (addr < (ROM_SIZE) && addr >= ROM_ADDR) {
     return rom[addr];
   } else if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
@@ -59,14 +75,14 @@ unsigned char read_char_mem(unsigned int addr) {
   return 0;
 }
 
-void write_rom_char(unsigned int addr, unsigned char data) {
+void write_rom_char(data_t addr, uint8_t data) {
   rom[addr] = data;
 }
 
-void write_rom(unsigned int addr, unsigned int data) {
+void write_rom(data_t addr, instr_t data) {
   union int_to_char conv;
   conv.ic_val = data;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < sizeof(instr_t); i++) {
     write_rom_char(addr + i, conv.ic_char[i]);
   }
 }

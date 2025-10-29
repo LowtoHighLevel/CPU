@@ -41,12 +41,12 @@ target:
 	@mkdir -p target
 
 target/emu: target $(SRCS)
-	@$(CC) $(CFLAGS) -o $@ $(SRCS)
+	@$(CC) $(CFLAGS) $(COPTS) -o $@ $(SRCS)
 	@echo "Compiled: $@ from $(SRCS)"
 
 
 target/alutest: target src/alu.c src/util.c src/regs.c
-	@$(CC) $(CFLAGS) -DTEST_ALU -o $@ src/alu.c src/util.c src/regs.c
+	@$(CC) $(CFLAGS) $(COPTS) -DTEST_ALU -o $@ src/alu.c src/util.c src/regs.c
 	@echo "Created test executable for alu"
 
 clean:
