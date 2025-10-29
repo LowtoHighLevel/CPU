@@ -49,7 +49,7 @@ void read_data(unsigned char reg1, unsigned char reg2, unsigned int * d1, unsign
   *d2 = read_reg(reg2);
 }
 
-void aluop(unsigned int x, unsigned int y, unsigned char control, unsigned char * carry, unsigned char * zero, unsigned char * overflow, unsigned char * neg, unsigned int * out) {
+void aluop(unsigned int x, unsigned int y, unsigned char control, unsigned int * out) {
   bit a[32];
   bit b[32];
   bit c[32];
@@ -57,24 +57,25 @@ void aluop(unsigned int x, unsigned int y, unsigned char control, unsigned char 
   int_to_bit(x, a);
   int_to_bit(y, b);
 
-  alu_op(a, b, 32, c, control, carry, overflow, neg);
+  alu_op(a, b, 32, c, control);
+
 
 
   *out = bit_to_int(c);
-  *zero = *out == 0;
+  write_flag(FLAG_ZERO, *out == 0);
 }
 
 void write_back(unsigned char reg, unsigned int data) {
   write_reg(reg, data);
 }
 
-unsigned char condition(unsigned char control, unsigned char carry, unsigned char zero, unsigned char overflow, unsigned char neg) {
+unsigned char condition(unsigned char control) {
   return (
 	  (control == 0) ||
-	  (control == 1 && zero) ||
-	  (control == 2 && carry) ||
-	  (control == 3 && overflow) ||
-	  (control == 4 && neg)
+	  (control == 1 && read_flag(FLAG_ZERO)) ||
+	  (control == 2 && read_flag(FLAG_CARRY)) ||
+	  (control == 3 && read_flag(FLAG_OVERFLOW)) ||
+	  (control == 4 && read_flag(FLAG_NEG))
 	  );
 }
 
@@ -88,7 +89,7 @@ union int_uint {
   unsigned int ui;
 };
 
-void run_cmd(unsigned int * addr, unsigned char * carry, unsigned char * zero, unsigned char * overflow, unsigned char * neg) {
+void run_cmd(unsigned int * addr) {
 
   unsigned int cmd = 0;
   read_op(*addr, &cmd);
@@ -100,7 +101,7 @@ void run_cmd(unsigned int * addr, unsigned char * carry, unsigned char * zero, u
 
   union short_ushort rel;
   rel.us = (cmd & 0xFFFF);
-  unsigned char check = condition(control, *carry, *zero, *overflow, *neg);
+  unsigned char check = condition(control);
 
   if (typ >= 0b100) {
     if (typ == 0b100 && check) {
@@ -115,7 +116,7 @@ void run_cmd(unsigned int * addr, unsigned char * carry, unsigned char * zero, u
       *addr += 4;
     }
   } else {
-     aluop(d1, d2, control, carry, zero, overflow, neg, &d3);
+     aluop(d1, d2, control, &d3);
      
      if (typ == 0b000) {
        write_back(reg3, d3);

@@ -21,7 +21,7 @@ struct alu_op_type {
 
 unsigned char alu_op_to_control(struct alu_op_type* val);
 
-void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control, bit* carry, bit* overflow, bit* neg);
+void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control);
 
 bit bit_alu(bit carry_in, bit a, bit b, unsigned char control);
 

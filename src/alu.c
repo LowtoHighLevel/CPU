@@ -1,4 +1,5 @@
 #include <alu.h>
+#include <regs.h>
 #include <stdio.h>
 
 
@@ -29,7 +30,7 @@ bit bit_alu(bit carry_in, bit a, bit b, unsigned char control) {
 
 
 
-void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control, bit* carry, bit* overflow, bit* neg) {
+void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control) {
   bit carry_in = (control >> 3) & 0b1;
   bit invert_b = (control >> 4) & 0b1;
 
@@ -37,19 +38,19 @@ void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control, bit* ca
   unsigned char control_data = control & 0b111;
 
   if (control_data == ALU_OP_ROR) {
-    bit prev = *carry;
+    bit prev = read_flag(FLAG_CARRY);
     for (int i = length - 1; i >= 0; i--) {
       out[i] = prev;
       prev = a[i];
     }
-    *carry = prev;
+    write_flag(FLAG_CARRY, prev);
   } else if (control_data == ALU_OP_ROL) {
-    bit prev = *carry;
+    bit prev = read_flag(FLAG_CARRY);
     for (int i = 0; i < length; i++) {
       out[i] = prev;
       prev = a[i];
     }
-    *carry = prev;
+    write_flag(FLAG_CARRY, prev);
   } else {
    bit val = 0;
    bit prev_carry = carry_in;
@@ -63,11 +64,11 @@ void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control, bit* ca
       carry_in = (val & 0b10) >> 1;
     }
 
-    *overflow = (prev_carry ^ carry_in) & 0b1;
-    *carry = carry_in;
+    write_flag(FLAG_OVERFLOW, (prev_carry ^ carry_in) & 0b1);
+    write_flag(FLAG_CARRY, carry_in);
   }
 
-  *neg = b[length - 1];
+  write_flag(FLAG_NEG, b[length -1]);
 }
 
 

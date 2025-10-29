@@ -13,7 +13,7 @@
 
 ### IMM_TYPE
 ```
-001 5-bitreg 29-bitdata
+001 5-bitreg 24-bitdata
 ```
 
 ### MEMREAD

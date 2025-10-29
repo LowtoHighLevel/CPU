@@ -11,7 +11,6 @@ void write_next(unsigned int * addr, unsigned int val) {
 
 
 int main(int argc, char * argv[]) {
-  unsigned char carry = 0, zero = 0, overflow = 0, neg = 0;
   unsigned int addr = 0;
 
    FILE* ptr = fopen(argv[1],"rb");
@@ -35,7 +34,7 @@ int main(int argc, char * argv[]) {
   addr = 0;
 
   while (read_reg(30) != 36000) {
-      run_cmd(&addr, &carry, &zero, &overflow, &neg);
+      run_cmd(&addr);
   }
 
   if (argc > 2 && strcmp(argv[2], "-r") == 0) {
