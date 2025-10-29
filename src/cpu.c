@@ -150,14 +150,13 @@ void init() {
   for (int i = 0; i < 32; i++) {
     write_reg(i, 0);
   }
-  set_instruction_pointer(0);
+  set_instruction_pointer(read_mem(STARTVEC));
 }
 
 void run_cmd() {
   // Load the instruction and parse it
   instr_t cmd = 0;
   read_op(instruction_pointer(), &cmd);
- // printf("ip: %x, cmd: %x\n", instruction_pointer(), cmd);
   uint8_t typ, control, reg1, reg2, reg3;
   data_t imm;
   parse_op(cmd, &typ, &control, &reg1, &reg2, &reg3, &imm);

@@ -3,12 +3,26 @@
 #include <defs.h>
 #include <stdint.h>
 
-#define ROM_SIZE 1024 * 4
-#define RAM_SIZE 1024 * 8
+#ifndef LAYOUT
+#define LAYOUT 0
+#endif
 
-#define ROM_ADDR 0
-#define RAM_ADDR ROM_ADDR + ROM_SIZE
-#define CHAROUT_ADDR 1024 * 16
+#if LAYOUT == 1
+  #define ROM_SIZE 1024 * 2
+  #define RAM_SIZE 1024 * 8
+  #define ROM_ADDR STARTVEC - ROM_SIZE + 4
+  #define RAM_ADDR 0
+  #define CHAROUT_ADDR RAM_ADDR + RAM_SIZE
+
+  #else
+  #define ROM_SIZE 1024 * 4
+  #define RAM_SIZE 1024 * 8
+  #define ROM_ADDR 0
+  #define RAM_ADDR ROM_ADDR + ROM_SIZE
+  #define CHAROUT_ADDR 1024 * 16
+
+#endif
+
 
 unsigned char rom[ROM_SIZE]; // 4k of ROM
 unsigned char ram[RAM_SIZE]; // 8k of RAM
@@ -57,19 +71,21 @@ data_t read_mem(data_t addr) {
 void write_char_mem(data_t addr, uint8_t val) {
   if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     ram[(addr - RAM_ADDR)] = val;
-  } else if (addr == CHAROUT_ADDR) {
+  }
+  #if LAYOUT == 0
+  else if (addr == CHAROUT_ADDR) {
     printf("%c", (char)val);
   }
+  #endif
 }   
 
 unsigned char read_char_mem(data_t addr) {
+
+
   if (addr < (ROM_SIZE) && addr >= ROM_ADDR) {
     return rom[addr];
   } else if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     return ram[(addr - (RAM_ADDR))];
-  } else if (addr == CHAROUT_ADDR) {
-    scanf("%c", &scan_val);
-    return scan_val;
   }
 
   return 0;
