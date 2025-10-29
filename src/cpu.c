@@ -29,7 +29,7 @@ void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_
   *typ = (uint8_t)((op >> CPU_OP_TYPE_POS) & 0b111);
   switch (*typ) {
     case CPU_TYPE_REGISTER: {
-      *control = (uint8_t)((op >> CPU_OP_CONTROL_POS) & 0b11111);
+      *control = (uint8_t)((op >> 24) & 0b11111);
       *reg1 = (uint8_t)((op >> 16) & 0xFF);
       *reg2 = (uint8_t)((op >> 8) & 0xFF);
       *reg3 = (uint8_t)((op >> 0) & 0xFF);
@@ -144,21 +144,20 @@ union int_uint {
 };
 
 void init() {
-  uint32_t* addr = get_instruction_pointer();
   set_flags(0);
 
   for (int i = 0; i < 32; i++) {
     write_reg(i, 0);
   }
-  *addr = 0;
+  set_instruction_pointer(0);
 }
 
 void run_cmd() {
-
-  uint32_t* addr = get_instruction_pointer();
   // Load the instruction and parse it
   uint32_t cmd = 0;
-  read_op(*addr, &cmd);
+  read_op(instruction_pointer(), &cmd);
+  printf("ip: %x, cmd: %x\n", instruction_pointer(), cmd);
+ // printf("ip: %x, cmd: %x\n", instruction_pointer(), cmd);
   uint8_t typ, control, reg1, reg2, reg3;
   uint32_t imm;
   parse_op(cmd, &typ, &control, &reg1, &reg2, &reg3, &imm);
@@ -178,17 +177,17 @@ void run_cmd() {
     if (typ == CPU_TYPE_JMP_REL && check) {
       union int_uint iui;
       
-      iui.ui = *addr;
+      iui.ui = instruction_pointer();
       iui.i += (rel.s * 4);
-      *addr = iui.ui;
+      set_instruction_pointer(iui.ui);
     }
     // jump to address in register
     else if (typ == CPU_TYPE_JMP_REG && check) {
-      *addr = d1;
+      set_instruction_pointer(d1);
     }
     // jump to next instruction
     else {
-      *addr += 4;
+      set_instruction_pointer(instruction_pointer() + 4);
     }
   }
   // not a jump instruction. Probably memory or ALU
@@ -207,6 +206,6 @@ void run_cmd() {
       case CPU_TYPE_MEM_WRITE: write_mem(d1, d2); break;
     }
     // go to next instruction
-     *addr += 4;
+      set_instruction_pointer(instruction_pointer() + 4);
    }
 }

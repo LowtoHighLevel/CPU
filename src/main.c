@@ -28,8 +28,8 @@ int main(int argc, char * argv[]) {
   uint8_t print_registers = 0;
   uint8_t input_type = 0;
   int input_file_i = 0;
-  if (argc > 2) {
-    for (int i = 2; i < argc; i++) {
+  if (argc > 1) {
+    for (int i = 1; i < argc; i++) {
       if (strcmp(argv[i], "-r") == 0) {
         print_registers = 1;
       } else if (strcmp(argv[i], "-b") == 0) {
@@ -44,6 +44,7 @@ int main(int argc, char * argv[]) {
   }
 
   if (input_type == 1) {
+    printf("Loading file: %s\n", argv[input_file_i]);
     // Try and open a binary file
     FILE* ptr = fopen(argv[input_file_i],"rb");
     if (ptr == NULL) {
@@ -63,7 +64,7 @@ int main(int argc, char * argv[]) {
   } else if (input_type == 2) {
     uint32_t cmds[4096];
     int32_t num_cmds = argc - input_file_i;
-    for (int i = input_file_i; i < argv; i++) {
+    for (int i = input_file_i; i < argc; i++) {
       cmds[i-input_file_i] = (int)strtol(argv[i], NULL, 16);
     }
     for (int32_t i = 0; i < num_cmds; i++) {
@@ -88,7 +89,7 @@ int main(int argc, char * argv[]) {
   }
 
   // print out registers at end if needed.
-  if (argc > 2 && strcmp(argv[2], "-r") == 0) {
+  if (print_registers) {
     printf("Registers: \n");
     for (uint8_t i = 0; i < 32; i++) {
       printf("reg%d: %u\n", i, read_reg(i));

@@ -60,8 +60,16 @@ uint32_t get_flags();
 void set_flags(uint32_t flags_in);
 
 /**
- * Returns the instruction pointer.
+ * Gets the current instruction address
+ *
+ * return - instruction pointer address
  */
-uint32_t* get_instruction_pointer();
+uint32_t instruction_pointer();
 
+/**
+ * Sets the instruction pointer's address.
+ * 
+ * new_val - new instruction pointer
+ */
+void set_instruction_pointer(uint32_t new_val);
 #endif

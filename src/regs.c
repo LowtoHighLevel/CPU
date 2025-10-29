@@ -12,7 +12,7 @@ uint32_t ip;
 
 uint32_t read_reg(uint8_t reg) {
   
-  if (reg > NUM_REGISTERS - 1) {
+  if (reg >= NUM_REGISTERS) {
     printf("Attempted to read invalid register: %u", reg);
     exit(1);    
   }
@@ -27,7 +27,7 @@ uint32_t read_reg(uint8_t reg) {
 
 void write_reg(uint8_t reg, uint32_t data) {
   
-  if (reg > NUM_REGISTERS - 1) {
+  if (reg >= NUM_REGISTERS) {
     printf("Attempted to write to invalid register: %u", reg);
     exit(1);    
   }
@@ -55,6 +55,10 @@ void set_flags(uint32_t flags_in) {
   flags = flags_in;
 }
 
-uint32_t* get_instruction_pointer() {
-  return &ip;
+uint32_t instruction_pointer() {
+  return ip;
+}
+
+void set_instruction_pointer(uint32_t new_val) {
+  ip = new_val;
 }
