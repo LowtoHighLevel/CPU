@@ -1,14 +1,13 @@
 #include <mem.h>
 #include <stdio.h>
-unsigned char rom[1024 * 4]; // 4k of ROM
 
+unsigned char rom[1024 * 4]; // 4k of ROM
 unsigned char ram[1024 * 8]; // 8k of RAM
 
 union int_to_char {
   unsigned int ic_val;
   unsigned char ic_char[4];
 };
-
 
 void write_mem(unsigned int addr, unsigned int val) {
 
@@ -52,7 +51,6 @@ unsigned char read_char_mem(unsigned int addr) {
 void write_rom_char(unsigned int addr, unsigned char data) {
   rom[addr] = data;
 }
-
 
 void write_rom(unsigned int addr, unsigned int data) {
   union int_to_char conv;

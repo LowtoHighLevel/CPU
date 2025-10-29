@@ -32,3 +32,7 @@ void write_flag(unsigned char flag, unsigned int data) {
 unsigned int get_flags() {
   return flags;
 }
+
+void set_flags(unsigned int flags_in) {
+  flags = flags_in;
+}

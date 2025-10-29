@@ -3,164 +3,240 @@
 #include <stdio.h>
 
 
-unsigned char alu_op_to_control(struct alu_op_type* val) {
-  unsigned char out = val->alu_op_op;
-  out |= (val->alu_op_carry_in & 0b1) << 3;
-  out |= (val->alu_op_invert_b & 0b1) << 4;
-  return out;
-}
 
 
-bit bit_alu(bit carry_in, bit a, bit b, unsigned char control) {
-  control = control & 0b111;
-
-  if (control == ALU_OP_ADD) {
-    return add_bit(carry_in, a, b);
-  } else if (control == ALU_OP_AND) {
-    return and_bit(a, b);
-  } else if(control == ALU_OP_OR) {
-    return or_bit(a,b);
-  } else if (control == ALU_OP_XOR) {
-    return xor_bit(a,b);
-  } else {
-    printf("Unknown ALU OP: %d\n", control);
-    return -1;
-  }
-}
-
-
-
-void alu_op(bit* a, bit* b, int length, bit* out, unsigned char control) {
-  bit carry_in = (control >> 3) & 0b1;
-  bit invert_b = (control >> 4) & 0b1;
-
-
-  unsigned char control_data = control & 0b111;
-
-  if (control_data == ALU_OP_ROR) {
-    bit prev = read_flag(FLAG_CARRY);
-    for (int i = length - 1; i >= 0; i--) {
-      out[i] = prev;
-      prev = a[i];
-    }
-    write_flag(FLAG_CARRY, prev);
-  } else if (control_data == ALU_OP_ROL) {
-    bit prev = read_flag(FLAG_CARRY);
-    for (int i = 0; i < length; i++) {
-      out[i] = prev;
-      prev = a[i];
-    }
-    write_flag(FLAG_CARRY, prev);
-  } else {
-   bit val = 0;
-   bit prev_carry = carry_in;
-    for (int i = 0; i < length - 1; i++) {
-      if (invert_b) {
-        b[i] = (~b[i]) & 0b1;
-      }
-      bit val = bit_alu(carry_in, a[i], b[i], control);
-      out[i] = val & 0b1;
-      prev_carry = carry_in;
-      carry_in = (val & 0b10) >> 1;
-    }
-
-    write_flag(FLAG_OVERFLOW, (prev_carry ^ carry_in) & 0b1);
-    write_flag(FLAG_CARRY, carry_in);
-  }
-
-  write_flag(FLAG_NEG, b[length -1]);
-}
-
-
-bit add_bit(bit carry_in, bit a, bit b) {
-  return (carry_in + a + b) & 0b11;
-}
-
+/**
+ * Runs an AND gate on two bits
+ * 
+ * a - first bit
+ * b - second bit
+ * return: a AND b
+ */
 bit and_bit(bit a, bit b) {
   return (a & b) & 0b1;
 }
 
+
+/**
+ * Runs an OR gate on two bits
+ * 
+ * a - first bit
+ * b - second bit
+ * return: a OR b
+ */
 bit or_bit(bit a, bit b) {
   return (a | b) & 0b1;
 }
 
+
+/**
+ * Runs an XOR gate on two bits
+ * 
+ * a - first bit
+ * b - second bit
+ * return: a XOR b
+ */
 bit xor_bit(bit a, bit b) {
   return (a ^ b) & 0b1;;
 }
 
-union long_to_data {
-  unsigned long data;
-  unsigned int intdata[2];
-  unsigned short shortdata[4];
-  unsigned char chardata[8];
-};
-
-unsigned char bit_to_char(bit* arr) {
-  unsigned long out = bit_to_num(arr, 8);
-
-  union long_to_data d;
-  d.data = out;
-  return d.chardata[0];
+/**
+ * Emulates a half adder
+ * 
+ * a - first input
+ * b - Second input
+ * return binary half added value
+ */
+bit half_add_bit(bit a, bit b) {
+    bit hi = and_bit(a, b);
+    bit lo = xor_bit(a, b);  
+    return (hi << 1) | lo;
 }
 
-void char_to_bit(unsigned char val, bit* out) {
-  union long_to_data d;
-  d.data = 0;
-  d.chardata[0] = val;
-  num_to_bit(d.data, out, 8);
-}
-
-unsigned short bit_to_short(bit* arr) {
-  unsigned long out = bit_to_num(arr, 16);
-
-  union long_to_data d;
-  d.data = out;
-  return d.shortdata[0];
-}
-
-void short_to_bit(unsigned short val, bit* out) {
-  union long_to_data d;
-  d.data = 0;
-  d.shortdata[0] = val;
-  num_to_bit(d.data, out, 16);
-}
-
-unsigned int bit_to_int(bit* arr) {
-  unsigned long out = bit_to_num(arr, 32);
-
-  union long_to_data d;
-  d.data = out;
-  return d.intdata[0];
-}
-
-void int_to_bit(unsigned int val, bit* out) {
-  union long_to_data d;
-  d.data = 0;
-  d.intdata[0] = val;
-  num_to_bit(d.data, out, 32);
-}
-
-void long_to_bit(unsigned long val, bit* out) {
-  num_to_bit(val, out, 64);
-}
-
-unsigned long bit_to_long(bit* arr) {
-  return bit_to_num(arr, 64);
+/**
+ * Adds a single bit
+ * 
+ * carry_in - Carry input
+ * a - A input
+ * b - B input
+ * return: a binary value with position 1 as the carry out, and position 0 as the output.
+ */
+bit add_bit(bit carry_in, bit a, bit b) {
+  bit half = half_add_bit(a, b);
+  bit full = half_add_bit(half & 0b1, carry_in);
+  bit out = ((full | half) & 0b10) | (full & 0x1);
+  return out;
 }
 
 
-void num_to_bit(unsigned long val, bit* out, int length) {
-  for (int i = 0; i < length; i++) {
-    out[i] = val & 0b1;
-    val = val >> 1;
+
+/**
+ * Handles an ALU for a single bit
+ * 
+ * carry_in - carry input
+ * a - a input
+ * b - b input
+ * control - alu operation
+ * return - the output of the alu operation
+ */
+bit bit_alu(bit carry_in, bit a, bit b, uint8_t control) {
+  control = control & 0b111;
+
+  switch (control) {
+    case ALU_OP_ADD: return add_bit(carry_in, a, b);
+    case ALU_OP_AND: return and_bit(a, b);
+    case ALU_OP_OR: return or_bit(a, b);
+    case ALU_OP_XOR: return xor_bit(a, b);
+    default: {
+      printf("Unknown ALU OP: %d\n", control);
+      return -1;
+    }
   }
 }
 
-unsigned long bit_to_num(bit* arr, int length) {
-  unsigned long out = 0;
-  for( int i = 0; i < length; i++) {
-    out |= ((unsigned long)(arr[i] & 0b1) << i);
+void alu_op(bit* a, bit* b, int length, bit* out, uint8_t control) {
+  
+  // Gather control data
+  bit carry_in = (control >> 3) & 0b1; // Carry in
+  bit invert_b = (control >> 4) & 0b1; // Whether we invert b (For subtraction)
+  uint8_t operation = control & 0b111; // the actual operation
+
+
+  // Handle operations
+  switch (operation) {
+    case ALU_OP_ROR: {
+      bit carry = read_flag(FLAG_CARRY);
+      for (uint32_t i = length - 1; i >= 0; i--) {
+        out[i] = carry;
+        carry = a[i];
+      }
+      write_flag(FLAG_CARRY, carry);
+      break;
+    }
+    case ALU_OP_ROL: {
+      bit carry = read_flag(FLAG_CARRY);
+      for (uint32_t i = 0; i < length; i++) {
+        out[i] = carry;
+        carry = a[i];
+      }
+      write_flag(FLAG_CARRY, carry);
+      break;
+    }
+    default: {
+      bit val = 0; // output value
+      bit prev_carry = carry_in; // carry from previous iteration
+      
+      // iterate through each bit and run an alu operation on it
+      for (uint32_t i = 0; i < length - 1; i++) {
+
+        // Invert B
+        if (invert_b) {
+            b[i] = (~b[i]) & 0b1;
+        }
+        // Run the operation on current bit and set output, and carry
+        bit val = bit_alu(carry_in, a[i], b[i], control);
+          out[i] = val & 0b1;
+          prev_carry = carry_in;
+          carry_in = (val & 0b10) >> 1;
+        }
+
+        // Handle last-minute flags
+        write_flag(FLAG_OVERFLOW, (prev_carry ^ carry_in) & 0b1);
+        write_flag(FLAG_CARRY, carry_in);
+        break;
+    }
+  }
+  write_flag(FLAG_NEG, b[length -1]);
+}
+
+#ifdef TEST_ALU
+#include <stdlib.h>
+#ifndef TEST_ALU_BITLENGTH
+#define TEST_ALU_BITLENGTH 32
+#endif
+
+
+/**
+ * runs a specific alu function
+ * 
+ * x - first input
+ * y - second input
+ * control - alu control
+ * return - output
+ */
+uint64_t testFn(uint64_t x, uint64_t y, uint8_t control) {
+
+  bit a[TEST_ALU_BITLENGTH], b[TEST_ALU_BITLENGTH], c[TEST_ALU_BITLENGTH];
+  num_to_bit(x, a, TEST_ALU_BITLENGTH);
+  num_to_bit(y, b, TEST_ALU_BITLENGTH);
+  alu_op(a, b, TEST_ALU_BITLENGTH, c, control);
+  return bit_to_num(c, TEST_ALU_BITLENGTH);
+}
+
+/**
+ * Masks a long into the right size
+ * 
+ * x - test value
+ */
+uint64_t mask_bits(uint64_t x) {
+  return gen_mask(TEST_ALU_BITLENGTH) & x;
+}
+
+/**
+ * tests a specific item and returns whether it worked or not
+ * 
+ * x - first input
+ * y - second input
+ * compare - a value to check against
+ * control - alu control value
+ * return - -1 if successful, out if not
+ */
+uint64_t test(uint64_t x, uint64_t y, uint64_t compare, uint8_t control) {
+  uint64_t out = testFn(x, y, control);
+  if (compare == out) {
+    return -1;
   }
   return out;
 }
 
+/**
+ * Tests like test() but prints an error and exits upon an error
+ * 
+ * x - first input
+ * y - second input
+ * compare - comparision value
+ * control - control value
+ * errMessage - error message string
+ */
+void testErr(uint64_t x, uint64_t y, uint64_t compare, uint8_t control, const char * errMessage) {
+  uint64_t val = test(x, y, compare, control);
+  if (val != -1) {
+    printf("error: %s with x: %llu, y: %llu, got %llu\n", errMessage, x, y, val);
+    exit(1);
+  }
+}
+
+int main(int argc, char* argv[]) {
+  printf("ALU Test program!\n");
+  printf("bitlength: %d\n", TEST_ALU_BITLENGTH);
+
+
+  const char * names[] = {"and", "or", "xor", "add"};
+  
+  const uint8_t control[] = {ALU_OP_AND, ALU_OP_OR, ALU_OP_XOR, ALU_OP_ADD};
+  const char * errs[] = {"failed to and", "failed to or", "failed to xor", "failed to add"};
+  
+  uint32_t test_len = 4;
+
+  for (uint32_t i = 0; i < test_len; i++) {
+    for (uint64_t x = 0; x < (1000); x++) {
+      for (uint64_t y = 0; y < (1000); y++) {
+          const uint64_t compares[] = {mask_bits(x) & mask_bits(y), mask_bits(x) | mask_bits(y), mask_bits(x) ^ mask_bits(y), mask_bits(x) + mask_bits(y)};
+            testErr(x, y, compares[i], control[i], errs[i]);
+      }
+    }
+    printf("test: %s succeeded!\n", names[i]);
+  }
+
+}
+#endif

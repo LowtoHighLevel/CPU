@@ -3,73 +3,113 @@
 #include <regs.h>
 #include <alu.h>
 #include <mem.h>
+#include <util.h>
 
-void read_op(unsigned int addr, unsigned int* cmd) {
+/**
+ * Reads an instruction from memory
+ * 
+ * addr - memory address
+ * cmd - pointer to instruction
+ */
+void read_op(uint32_t addr, uint32_t* cmd) {
   *cmd = read_mem(addr);
 }
 
-void parse_op(unsigned int op, unsigned char * typ, unsigned char* control, unsigned char* reg1, unsigned char* reg2, unsigned char* reg3, unsigned int* imm) {
+/**
+ * Parses a cpu instruction and breaks it out into different registers, control bits, or an immidiate value.
+ * 
+ * op - cpu instruction
+ * typ - pointer to instruction type
+ * control - pointer to control value
+ * reg1-3 - pointers to register numbers
+ * imm - pointer to immediate value
+ */
+void parse_op(uint32_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t* reg2, uint8_t* reg3, uint8_t* imm) {
 
-  *typ = (unsigned char)((op >> 29) & 0b111);
-  if (*typ == 0) {
-    *control = (unsigned char)((op >> 24) & 0b11111);
-    *reg1 = (unsigned char)((op >> 16) & 0xFF);
-    *reg2 = (unsigned char)((op >> 8) & 0xFF);
-    *reg3 = (unsigned char)((op >> 0) & 0xFF);
-    *imm = 0;
-  } else if (*typ == 1) {
-    *reg3 = (unsigned char)((op >> 24) & 0b11111);
-    *imm = (unsigned int) op & 0xFFFFFF;
-    *reg1 = 0;
-    *reg2 = 0;
-    *control = 0;
-  } else if (*typ == 2) {
-    *control = 0;
-    *reg1 = (unsigned char)((op >> 16) & 0xFF);
-    *reg2 = 0;
-    *reg3 = (unsigned char)((op) & 0xFF);
-    *imm = 0;
-  } else if (*typ == 3) {
-    *control = 0;
-    *reg1 = (unsigned char)((op >> 16) & 0xFF);
-    *reg2 = (unsigned char)((op >> 8) & 0xFF);
-    *reg3 = 0;
-    *imm = 0;
-  } else {
-    *control =  (unsigned char)((op >> 24) & 0b11111);
-    *reg1 = 0;
-    *reg2 = 0;
-    *reg3 = 0;
-    *imm = 0;
+  *typ = (uint8_t)((op >> CPU_OP_TYPE_POS) & 0b111);
+  switch (*typ) {
+    case CPU_TYPE_REGISTER: {
+      *control = (uint8_t)((op >> CPU_OP_CONTROL_POS) & 0b11111);
+      *reg1 = (uint8_t)((op >> 16) & 0xFF);
+      *reg2 = (uint8_t)((op >> 8) & 0xFF);
+      *reg3 = (uint8_t)((op >> 0) & 0xFF);
+      *imm = 0;
+      break;
+    }
+    case CPU_TYPE_MEM_READ: {
+      *control = 0;
+      *reg1 = (uint8_t)((op >> 16) & 0xFF);
+      *reg2 = 0;
+      *reg3 = (uint8_t)((op) & 0xFF);
+      *imm = 0;
+      break;
+    }
+    case CPU_TYPE_MEM_WRITE: {
+      *control = 0;
+      *reg1 = (uint8_t)((op >> 16) & 0xFF);
+      *reg2 = (uint8_t)((op >> 8) & 0xFF);
+      *reg3 = 0;
+      *imm = 0;
+      break;
+    } 
+    default: {
+      *control =  (uint8_t)((op >> CPU_OP_CONTROL_POS) & 0b11111);
+      *reg1 = 0;
+      *reg2 = 0;
+      *reg3 = 0;
+      *imm = 0;
+      break;
+    }
   }
 }
 
-void read_data(unsigned char reg1, unsigned char reg2, unsigned int * d1, unsigned int * d2) {
+/**
+ * Reags data from a register and loads it into the values
+ * 
+ * reg1 - first register
+ * reg2 - second register
+ * d1 - pointer to store register 1 data
+ * d2 - pointer to store regisger 2 data
+ */
+void read_data(uint8_t reg1, uint8_t reg2, uint32_t * d1, uint32_t * d2) {
   *d1 = read_reg(reg1);
   *d2 = read_reg(reg2);
 }
 
-void aluop(unsigned int x, unsigned int y, unsigned char control, unsigned int * out) {
-  bit a[32];
-  bit b[32];
-  bit c[32];
+/**
+ * Calls an ALU operation
+ * 
+ * x - a input
+ * y - b input
+ * control - control data
+ * out - output value
+ */
+void aluop(uint32_t x, uint32_t y, uint8_t control, uint32_t * out) {
+  bit a[32], b[32], c[32];
 
   int_to_bit(x, a);
   int_to_bit(y, b);
 
   alu_op(a, b, 32, c, control);
 
-
-
   *out = bit_to_int(c);
   write_flag(FLAG_ZERO, *out == 0);
 }
 
-void write_back(unsigned char reg, unsigned int data) {
+/**
+ * Writes back some data to a register
+ */
+void write_back(uint8_t reg, uint32_t data) {
   write_reg(reg, data);
 }
 
-unsigned char condition(unsigned char control) {
+/**
+ * sanity checks control values for the cpu with the cpu's flags
+ * 
+ * control - control value from instruction
+ * return - 1 if checks pass, 0 otherwise
+ */
+uint8_t condition(uint8_t control) {
   return (
 	  (control == 0) ||
 	  (control == 1 && read_flag(FLAG_ZERO)) ||
@@ -79,56 +119,75 @@ unsigned char condition(unsigned char control) {
 	  );
 }
 
+/**
+ * Converts a short to an unsigned short
+ */
 union short_ushort {
-  short s;
-  unsigned short us;
+  int16_t s;
+  uint16_t us;
 };
 
+/**
+ * Converts an int to an unsigned int
+ */
 union int_uint {
-  int i;
-  unsigned int ui;
+  int32_t i;
+  uint32_t ui;
 };
 
-void run_cmd(unsigned int * addr) {
+void run_cmd(uint32_t * addr) {
 
-  unsigned int cmd = 0;
+  // Load the instruction and parse it
+  uint32_t cmd = 0;
   read_op(*addr, &cmd);
-  unsigned char typ, control, reg1, reg2, reg3;
-  unsigned int imm;
+  uint8_t typ, control, reg1, reg2, reg3;
+  uint32_t imm;
   parse_op(cmd, &typ, &control, &reg1, &reg2, &reg3, &imm);
-  unsigned int d1, d2, d3;
+
+  // Read any registers that are needed
+  uint32_t d1, d2, d3;
   read_data(reg1, reg2, &d1, &d2);
 
+  // Get relative address
   union short_ushort rel;
   rel.us = (cmd & 0xFFFF);
-  unsigned char check = condition(control);
 
-  if (typ >= 0b100) {
-    if (typ == 0b100 && check) {
+  // Check for jumps
+  uint8_t check = condition(control);
+  if (typ >= CPU_TYPE_JMP_REL) {
+    // Relative jump
+    if (typ == CPU_TYPE_JMP_REL && check) {
       union int_uint iui;
       
       iui.ui = *addr;
       iui.i += (rel.s * 4);
       *addr = iui.ui;
-    } else if (typ == 0b101 && check) {
+    }
+    // jump to address in register
+    else if (typ == CPU_TYPE_JMP_REG && check) {
       *addr = d1;
-    } else {
+    }
+    // jump to next instruction
+    else {
       *addr += 4;
     }
-  } else {
+  }
+  // not a jump instruction. Probably memory or ALU
+  else {
      aluop(d1, d2, control, &d3);
      
-     if (typ == 0b000) {
-       write_back(reg3, d3);
-     } else if (typ == 0b001) {
-       write_back(reg3, imm);
-     } else if (typ == 0b010) {
-       d3 = read_mem(d1);
-       write_back(reg3, d3);
-     } else if (typ == 0b011) {
-       write_mem(d1, d2);
-     }
-     
+     // handle output
+     switch (typ) {
+      case CPU_TYPE_REGISTER: write_back(reg3, d3); break;
+      case CPU_TYPE_IMM: write_back(reg3, imm); break;
+      case CPU_TYPE_MEM_READ: {
+        d3 = read_mem(d1);
+        write_back(reg3, d3);
+        break;
+      }
+      case CPU_TYPE_MEM_WRITE: write_mem(d1, d2); break;
+    }
+    // go to next instruction
      *addr += 4;
    }
 }
