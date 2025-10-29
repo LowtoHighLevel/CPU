@@ -8,8 +8,6 @@ uint32_t regs[NUM_REGISTERS - 1];
 
 uint32_t flags;
 
-uint32_t ip;
-
 uint32_t read_reg(uint8_t reg) {
   
   if (reg >= NUM_REGISTERS) {
@@ -56,9 +54,9 @@ void set_flags(uint32_t flags_in) {
 }
 
 uint32_t instruction_pointer() {
-  return ip;
+  return regs[30];
 }
 
 void set_instruction_pointer(uint32_t new_val) {
-  ip = new_val;
+  regs[30] = new_val;
 }
