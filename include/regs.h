@@ -1,10 +1,27 @@
 #ifndef __REGS_H
 #define __REGS_H
 
-unsigned int read_reg(unsigned char reg);
+#include <stdint.h>
 
-void write_reg(unsigned char reg, unsigned int data);
+/**
+ * Reads a value from a register
+ * 
+ * reg - register to read from
+ * return - value in register reg
+ */
+uint32_t read_reg(uint8_t reg);
 
+/**
+ * Writes a value to a register
+ * 
+ * reg - register to write to
+ * data - value to write
+ */
+void write_reg(uint8_t reg, uint32_t data);
+
+/**
+ * Flag types in flags
+ */
 enum flag_type {
     FLAG_CARRY = 0,
     FLAG_ZERO,
@@ -12,12 +29,39 @@ enum flag_type {
     FLAG_NEG
 };
 
-unsigned int read_flag(unsigned char flag);
+/**
+ * Reads a flag
+ * 
+ * flag - flag to read
+ * return - the value of the flag.
+ */
+uint32_t read_flag(uint8_t flag);
 
-void write_flag(unsigned char flag, unsigned int data);
+/**
+ * writes a specific value to a flag
+ * 
+ * flag - flag to write to
+ * data - data to set the flag to
+ */
+void write_flag(uint8_t flag, uint8_t data);
 
-unsigned int get_flags();
+/**
+ * Retreives all flags
+ * 
+ * return - the flags integer
+ */
+uint32_t get_flags();
 
-void set_flags(unsigned int flags_in);
+/**
+ * Sets all flags
+ * 
+ * flags_in - flags to set
+ */
+void set_flags(uint32_t flags_in);
+
+/**
+ * Returns the instruction pointer.
+ */
+uint32_t* get_instruction_pointer();
 
 #endif

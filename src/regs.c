@@ -1,10 +1,22 @@
 #include <regs.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-unsigned int regs[31];
 
-unsigned int flags;
+#define NUM_REGISTERS 32
+uint32_t regs[NUM_REGISTERS - 1];
 
-unsigned int read_reg(unsigned char reg) {
+uint32_t flags;
+
+uint32_t ip;
+
+uint32_t read_reg(uint8_t reg) {
+  
+  if (reg > NUM_REGISTERS - 1) {
+    printf("Attempted to read invalid register: %u", reg);
+    exit(1);    
+  }
+
   if (reg == 0) {
     return 0;
   } else {
@@ -13,7 +25,13 @@ unsigned int read_reg(unsigned char reg) {
   
 }
 
-void write_reg(unsigned char reg, unsigned int data) {
+void write_reg(uint8_t reg, uint32_t data) {
+  
+  if (reg > NUM_REGISTERS - 1) {
+    printf("Attempted to write to invalid register: %u", reg);
+    exit(1);    
+  }
+  
   if (reg == 0) {
     return;
   }
@@ -21,18 +39,22 @@ void write_reg(unsigned char reg, unsigned int data) {
   regs[reg-1] = data;
 }
 
-unsigned int read_flag(unsigned char flag) {
+uint32_t read_flag(uint8_t flag) {
   return (flags >> flag) & 0x1;
 }
 
-void write_flag(unsigned char flag, unsigned int data) {
+void write_flag(uint8_t flag, uint8_t data) {
     flags &= (0xFFFF & ((data & 0x1) << flag));
 }
 
-unsigned int get_flags() {
+uint32_t get_flags() {
   return flags;
 }
 
-void set_flags(unsigned int flags_in) {
+void set_flags(uint32_t flags_in) {
   flags = flags_in;
+}
+
+uint32_t* get_instruction_pointer() {
+  return &ip;
 }
