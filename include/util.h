@@ -91,7 +91,7 @@ void num_to_bit(uint64_t val, bit* out, uint32_t length);
  * length - bit length of number
  * return: output value
  */
-uint64_t bit_to_num(bit* arr, int length);
+uint64_t bit_to_num(bit* arr, uint32_t length);
 
 /**
  * Generates a bitmask of all 1s of length length

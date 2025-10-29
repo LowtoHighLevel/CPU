@@ -11,14 +11,14 @@ union long_to_data {
 };
 
 
-void num_to_bit(uint64_t val, bit* out, int length) {
+void num_to_bit(uint64_t val, bit* out, uint32_t length) {
   for (int i = 0; i < length; i++) {
     out[i] = val & 0b1;
     val = val >> 1;
   }
 }
 
-uint64_t bit_to_num(bit* arr, int length) {
+uint64_t bit_to_num(bit* arr, uint32_t length) {
   uint64_t out = 0;
   for( int i = 0; i < length; i++) {
     out |= ((uint64_t)(arr[i] & 0b1) << i);
