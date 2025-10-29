@@ -135,8 +135,19 @@ union int_uint {
   uint32_t ui;
 };
 
-void run_cmd(uint32_t * addr) {
+void init() {
+  uint32_t* addr = get_instruction_pointer();
+  set_flags(0);
 
+  for (int i = 0; i < 32; i++) {
+    write_reg(i, 0);
+  }
+  *addr = 0;
+}
+
+void run_cmd() {
+
+  uint32_t* addr = get_instruction_pointer();
   // Load the instruction and parse it
   uint32_t cmd = 0;
   read_op(*addr, &cmd);

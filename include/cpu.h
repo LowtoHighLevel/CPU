@@ -16,11 +16,16 @@ enum CPU_TYPE {
 };
 
 /**
+ * Initializes the CPU.
+ */
+
+void init();
+/**
  * Runs a single CPU instruction at address addr.
  * 
  * addr - address to run instruction at.
  */
-void run_cmd(uint32_t * addr);
+void run_cmd();
 
 
 #endif
