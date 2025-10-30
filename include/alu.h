@@ -17,15 +17,6 @@ enum alu_op_type_cmd {
 };
 
 /**
- * ALU Operation types
- */
-struct alu_op_type {
-  bit alu_op_carry_in;
-  bit alu_op_invert_b;
-  uint8_t alu_op_op;
-};
-
-/**
  * Runs an ALU operation on arrays of bits.
  * a - Bit array for input A
  * b - Bit array for input B
