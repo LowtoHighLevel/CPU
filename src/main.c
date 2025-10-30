@@ -89,11 +89,11 @@ int main(int argc, char * argv[]) {
 
   // print out registers at end if needed.
   if (print_registers) {
-    log_message(LOG_WARNING, "Registers:");
+    log_message(LOG_INFO, "Registers:");
     for (uint8_t i = 0; i < 32; i++) {
       char regbuf[100];
-      sprintf(regbuf, "reg%d: %u\n", i, read_reg(i));
-      log_message(LOG_WARNING, regbuf);
+      sprintf(regbuf, "r%d: %u", i, read_reg(i));
+      log_message(LOG_INFO, regbuf);
     }
   }
 
