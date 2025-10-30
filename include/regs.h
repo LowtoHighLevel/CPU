@@ -24,8 +24,8 @@ void write_reg(uint8_t reg, data_t data);
  * Flag types in flags
  */
 enum flag_type {
-    FLAG_CARRY = 0,
-    FLAG_ZERO,
+    FLAG_ZERO = 0,
+    FLAG_CARRY,
     FLAG_OVERFLOW,
     FLAG_NEG
 };

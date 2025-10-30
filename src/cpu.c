@@ -119,13 +119,11 @@ void write_back(uint8_t reg, data_t data) {
  * return - 1 if checks pass, 0 otherwise
  */
 uint8_t condition(uint8_t control) {
-  return (
-	  (control == 0) ||
-	  (control == 1 && read_flag(FLAG_ZERO)) ||
-	  (control == 2 && read_flag(FLAG_CARRY)) ||
-	  (control == 3 && read_flag(FLAG_OVERFLOW)) ||
-	  (control == 4 && read_flag(FLAG_NEG))
-	  );
+  uint8_t condition = control == 0;
+  for (uint8_t i = 0; i <= 0b11111; i++) {
+    condition = condition || (control == i+1 && read_flag(i));
+  }
+  return condition;
 }
 
 /**
@@ -155,8 +153,7 @@ void init() {
 
 void run_cmd() {
   // Load the instruction and parse it
-  instr_t cmd = 0;
-  read_op(instruction_pointer(), &cmd);
+  instr_t cmd = read_instruction(instruction_pointer());
   uint8_t typ, control, reg1, reg2, reg3;
   data_t imm;
   parse_op(cmd, &typ, &control, &reg1, &reg2, &reg3, &imm);
@@ -171,40 +168,50 @@ void run_cmd() {
 
   // Check for jumps
   uint8_t check = condition(control);
-  if (typ >= CPU_TYPE_JMP_REL) {
-    // Relative jump
-    if (typ == CPU_TYPE_JMP_REL && check) {
-      union int_uint iui;
-      
-      iui.ui = instruction_pointer();
-      iui.i += (rel.s * 4);
-      set_instruction_pointer(iui.ui);
+
+  switch (typ) {
+    case CPU_TYPE_JMP_REL: {
+      if (check) {
+        union int_uint iui;
+        
+        iui.ui = instruction_pointer();
+        iui.i += (rel.s * 4);
+        set_instruction_pointer(iui.ui);
+        return;
+      }
+      break;
     }
-    // jump to address in register
-    else if (typ == CPU_TYPE_JMP_REG && check) {
-      set_instruction_pointer(d1);
+    case CPU_TYPE_JMP_REG: {
+      if (check) {
+        set_instruction_pointer(d1);
+        return;
+      }
+      break;
     }
-    // jump to next instruction
-    else {
-      set_instruction_pointer(instruction_pointer() + 4);
+    case CPU_TYPE_REGISTER: {
+      aluop(d1, d2, control, &d3);
+      write_back(reg3, d3);
+      break;
+    }
+    case CPU_TYPE_IMM: {
+      aluop(d1, d2, control, &d3);
+      write_back(reg3, imm);
+      break;
+    }
+    case CPU_TYPE_MEM_READ: {
+      aluop(d1, d2, control, &d3);
+      d3 = read_mem(d1);
+      write_back(reg3, d3);
+      break;
+    }
+    case CPU_TYPE_MEM_WRITE: {
+      aluop(d1, d2, control, &d3);
+      write_mem(d1, d2);
+      break;
+    }
+    default: {
+      break;
     }
   }
-  // not a jump instruction. Probably memory or ALU
-  else {
-     aluop(d1, d2, control, &d3);
-     
-     // handle output
-     switch (typ) {
-      case CPU_TYPE_REGISTER: write_back(reg3, d3); break;
-      case CPU_TYPE_IMM: write_back(reg3, imm); break;
-      case CPU_TYPE_MEM_READ: {
-        d3 = read_mem(d1);
-        write_back(reg3, d3);
-        break;
-      }
-      case CPU_TYPE_MEM_WRITE: write_mem(d1, d2); break;
-    }
-    // go to next instruction
-      set_instruction_pointer(instruction_pointer() + 4);
-   }
+  set_instruction_pointer(instruction_pointer() + 4);
 }
