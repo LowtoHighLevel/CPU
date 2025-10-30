@@ -101,5 +101,20 @@ uint64_t bit_to_num(bit* arr, uint32_t length);
  */
 uint64_t gen_mask(uint8_t length);
 
+// Log types
+enum LOG_TYPE {
+    LOG_DEBUG=0,
+    LOG_INFO,
+    LOG_WARNING,
+    LOG_ERROR,
+};
+
+/**
+ * Logs to stderr any information
+ *
+ * log_type - Log Level
+ * message - Log message
+ */
+void log_message(uint8_t log_type, char * message);
 
 #endif

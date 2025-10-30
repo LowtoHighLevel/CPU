@@ -74,6 +74,7 @@ void write_char_mem(data_t addr, uint8_t val) {
   }
   #if LAYOUT == 0
   else if (addr == CHAROUT_ADDR) {
+    // Actual output, not a log
     printf("%c", (char)val);
   }
   #endif

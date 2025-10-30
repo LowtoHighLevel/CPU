@@ -210,6 +210,9 @@ void run_cmd() {
       break;
     }
     default: {
+      char buffer[100];
+      sprintf(buffer, "Unknown CPU Instruction: %d", typ);
+      log_message(LOG_DEBUG, buffer);
       break;
     }
   }

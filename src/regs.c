@@ -2,18 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <defs.h>
+#include <util.h>
 
 #define NUM_REGISTERS 32
 data_t regs[NUM_REGISTERS - 1];
 
 uint32_t flags;
 
+void reg_out_bounds(const char* type, uint8_t reg) {
+  if (reg >= NUM_REGISTERS) {
+    char buf[100];
+    sprintf(buf, "Attempted to %s invalid register: %u", type, reg);
+    log_message(LOG_ERROR, buf);
+  }
+}
 data_t read_reg(uint8_t reg) {
   
-  if (reg >= NUM_REGISTERS) {
-    printf("Attempted to read invalid register: %u", reg);
-    exit(1);    
-  }
+  reg_out_bounds("read", reg);
 
   if (reg == 0) {
     return 0;
@@ -24,11 +29,7 @@ data_t read_reg(uint8_t reg) {
 }
 
 void write_reg(uint8_t reg, data_t data) {
-  
-  if (reg >= NUM_REGISTERS) {
-    printf("Attempted to write to invalid register: %u", reg);
-    exit(1);    
-  }
+  reg_out_bounds("write", reg);
   
   if (reg == 0) {
     return;

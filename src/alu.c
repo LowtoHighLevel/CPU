@@ -2,6 +2,7 @@
 #include <regs.h>
 #include <stdio.h>
 #include <defs.h>
+#include <util.h>
 
 
 
@@ -89,7 +90,9 @@ bit bit_alu(bit carry_in, bit a, bit b, uint8_t control) {
     case ALU_OP_OR: return or_bit(a, b);
     case ALU_OP_XOR: return xor_bit(a, b);
     default: {
-      printf("Unknown ALU OP: %d\n", control);
+      char buffer[100];
+      sprintf(buffer, "Unknown ALU OP: %d\n", control);
+      log_message(LOG_WARNING, buffer);
       return -1;
     }
   }
@@ -136,15 +139,15 @@ void alu_op(bit* a, bit* b, int length, bit* out, uint8_t control) {
         }
         // Run the operation on current bit and set output, and carry
         bit val = bit_alu(carry_in, a[i], b[i], control);
-          out[i] = val & 0b1;
-          prev_carry = carry_in;
-          carry_in = (val & 0b10) >> 1;
-        }
+        out[i] = val & 0b1;
+        prev_carry = carry_in;
+        carry_in = (val & 0b10) >> 1;
+      }
 
-        // Handle last-minute flags
-        write_flag(FLAG_OVERFLOW, (prev_carry ^ carry_in) & 0b1);
-        write_flag(FLAG_CARRY, carry_in);
-        break;
+      // Handle last-minute flags
+      write_flag(FLAG_OVERFLOW, (prev_carry ^ carry_in) & 0b1);
+      write_flag(FLAG_CARRY, carry_in);
+      break;
     }
   }
   write_flag(FLAG_NEG, b[length -1]);
@@ -212,15 +215,17 @@ uint64_t test(uint64_t x, uint64_t y, uint64_t compare, uint8_t control) {
 void testErr(uint64_t x, uint64_t y, uint64_t compare, uint8_t control, const char * errMessage) {
   uint64_t val = test(x, y, compare, control);
   if (val != -1) {
-    printf("error: %s with x: %llu, y: %llu, got %llu\n", errMessage, x, y, val);
-    exit(1);
+    char buffer[100];
+    sprintf(buffer, "%s with x: %lu, y: %lu, got %lu", errMessage, x, y, val);
+    log_message(LOG_ERROR, buffer);
   }
 }
 
 int main(int argc, char* argv[]) {
-  printf("ALU Test program!\n");
-  printf("bitlength: %d\n", TEST_ALU_BITLENGTH);
-
+  log_message(LOG_INFO, "ALU Test program!");
+  char bitlength_buf[32];
+  sprintf(bitlength_buf, "bitlength: %d\n", TEST_ALU_BITLENGTH);
+  log_message(LOG_DEBUG, bitlength_buf);
 
   const char * names[] = {"and", "or", "xor", "add"};
   
@@ -236,7 +241,9 @@ int main(int argc, char* argv[]) {
             testErr(x, y, compares[i], control[i], errs[i]);
       }
     }
-    printf("test: %s succeeded!\n", names[i]);
+    char test_success_buf[100];
+    sprintf(test_success_buf, "test: %s succeeded!\n", names[i]);
+    log_message(LOG_INFO, test_success_buf);
   }
 
 }

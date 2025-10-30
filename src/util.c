@@ -1,4 +1,6 @@
 #include <util.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * Splits a long into other forms of data based on its memory usage.
@@ -86,4 +88,19 @@ uint64_t gen_mask(uint8_t length) {
     val |= ((uint64_t)1 << i);
   }
   return val;
+}
+
+#ifndef LOGLEVEL
+#define LOGLEVEL LOG_INFO
+#endif
+const char * log_names[] = {"Debug", "Info", "Warning", "Error"};
+
+void log_message(uint8_t type, char * message) {
+  if (type >= LOGLEVEL && type <= 3) {
+    fprintf(stderr, "%s: %s\n", log_names[type], message);
+  }
+
+  if (type == LOG_ERROR) {
+    exit(1);
+  }
 }

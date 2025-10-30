@@ -3,6 +3,7 @@
 #include <cpu.h>
 #include <regs.h>
 #include <mem.h>
+#include <util.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -47,11 +48,14 @@ int main(int argc, char * argv[]) {
   int32_t num_cmds = 0;
 
   if (input_type == 1) {
-    printf("Loading file: %s\n", argv[input_file_i]);
+    char file_buf[100];
+    sprintf(file_buf, "Loading file: %s\n", argv[input_file_i]);
+    log_message(LOG_DEBUG, file_buf);
+
     // Try and open a binary file
     FILE* ptr = fopen(argv[input_file_i],"rb");
     if (ptr == NULL) {
-      printf("No such file.\n");
+      log_message(LOG_ERROR, "Input file does not exist.");
       return 1;
     }
 
@@ -85,11 +89,12 @@ int main(int argc, char * argv[]) {
 
   // print out registers at end if needed.
   if (print_registers) {
-    printf("Registers: \n");
+    log_message(LOG_WARNING, "Registers:");
     for (uint8_t i = 0; i < 32; i++) {
-      printf("reg%d: %u\n", i, read_reg(i));
+      char regbuf[100];
+      sprintf(regbuf, "reg%d: %u\n", i, read_reg(i));
+      log_message(LOG_WARNING, regbuf);
     }
-    printf("\n");
   }
 
   return 0;
