@@ -39,6 +39,9 @@ int main(int argc, char * argv[]) {
       } else if (strcmp(argv[i], "-f") == 0) {
         input_type = 1;
         input_file_i = ++i;
+      } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) {
+        printf("Usage: %s <args>\nArguments:\n  -h: Prints this menu\n  -r: prints registers after execution\n  -b <data>: loads hex data directly from command line\n  -f <file>: Loads a binary file\n  Without args: Loads from stdin\n\n", argv[0]);
+        exit(0);
       }
     }
   }
@@ -47,13 +50,20 @@ int main(int argc, char * argv[]) {
   instr_t cmds[4096];
   int32_t num_cmds = 0;
 
-  if (input_type == 1) {
+  if (input_type < 2) {
+
+    char * file = "./a.out";
+    if (input_type == 1) {
+      file = argv[input_file_i];
+    }
     char file_buf[100];
+    
     sprintf(file_buf, "Loading file: %s\n", argv[input_file_i]);
+        
     log_message(LOG_DEBUG, file_buf);
 
     // Try and open a binary file
-    FILE* ptr = fopen(argv[input_file_i],"rb");
+    FILE* ptr = fopen(file,"rb");
     if (ptr == NULL) {
       log_message(LOG_ERROR, "Input file does not exist.");
       return 1;
@@ -69,9 +79,6 @@ int main(int argc, char * argv[]) {
       cmds[i-input_file_i] = (int)strtol(argv[i], NULL, 16);
     }
 
-  } else {
-    // Store program in temporary ram
-    num_cmds = fread(cmds, sizeof(uint8_t), 4096, stdin);
   }
 
   // Write program to ROM.
