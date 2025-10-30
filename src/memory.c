@@ -13,8 +13,8 @@
   #define ROM_ADDR STARTVEC - ROM_SIZE + 4
   #define RAM_ADDR 0
   #define CHAROUT_ADDR RAM_ADDR + RAM_SIZE
-
-  #else
+ 
+#else
   #define ROM_SIZE 1024 * 4
   #define RAM_SIZE 1024 * 8
   #define ROM_ADDR 0
@@ -24,8 +24,8 @@
 #endif
 
 
-unsigned char rom[ROM_SIZE]; // 4k of ROM
-unsigned char ram[RAM_SIZE]; // 8k of RAM
+unsigned char rom[ROM_SIZE];
+unsigned char ram[RAM_SIZE];
 
 unsigned char scan_val;
 

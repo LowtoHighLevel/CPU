@@ -59,8 +59,6 @@ int main(int argc, char * argv[]) {
     num_cmds = fread(cmds, sizeof(uint8_t), 4096, ptr);
     fclose(ptr);
 
-    // write program to ROM.
-    
   } else if (input_type == 2) {
     num_cmds = argc - input_file_i;
     for (int i = input_file_i; i < argc; i++) {
@@ -72,11 +70,14 @@ int main(int argc, char * argv[]) {
     num_cmds = fread(cmds, sizeof(uint8_t), 4096, stdin);
   }
 
+  // Write program to ROM.
   for (int32_t i = 0; i < num_cmds; i++) {
     write_next(&addr, cmds[i]);
   }
 
+  // Init CPU
   init();
+
   // run main program (setting r30 to 36000 is a hack to exit. TODO: make it better :))
   while (read_reg(30) != 36000) {
       run_cmd();
@@ -88,7 +89,7 @@ int main(int argc, char * argv[]) {
     for (uint8_t i = 0; i < 32; i++) {
       printf("reg%d: %u\n", i, read_reg(i));
     }
-    printf("\n)");
+    printf("\n");
   }
 
   return 0;

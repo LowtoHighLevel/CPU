@@ -1,5 +1,5 @@
-make COPTS="-DLTHLV2_TYPE=32"
-../ASM/target/asm.exe ./test.S
+make
+../ASM/target/asm ./test.S
 echo "Starting test run!"
-./target/emu.exe -r -f out.bin
+./target/emu -r -f out.bin
 make clean
