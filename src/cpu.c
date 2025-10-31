@@ -62,8 +62,8 @@ void parse_op(instr_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t
       break;
     } 
     default: {
-      *control =  (uint8_t)((op >> CPU_OP_CONTROL_POS) & 0b11111);
-      *reg1 = 0;
+      *control =  (uint8_t)((op >> 24) & 0b11111);
+      *reg1 = (uint8_t)((op >> 16) & 0xFF);
       *reg2 = 0;
       *reg3 = 0;
       *imm = 0;
@@ -102,7 +102,11 @@ void aluop(data_t x, data_t y, uint8_t control, data_t * out) {
   alu_op(a, b, DATA_WIDTH, c, control);
 
   *out = bit_to_int(c);
-  write_flag(FLAG_ZERO, *out == 0);
+  char data[256];
+  sprintf(data, "ALU operation: control: %x, x: %d, y: %d, output: %d", control, x, y, *out);
+  log_message(LOG_DEBUG, data);
+  
+  write_flag(FLAG_ZERO, (*out) == 0 ? 1 : 0);
 }
 
 /**
@@ -120,9 +124,12 @@ void write_back(uint8_t reg, data_t data) {
  */
 uint8_t condition(uint8_t control) {
   uint8_t condition = control == 0;
-  for (uint8_t i = 0; i <= 0b11111; i++) {
-    condition = condition || (control == i+1 && read_flag(i));
+  if (!condition) {
+    condition = read_flag(control-1);
   }
+  char data[100];
+  sprintf(data, "condition check: control: %d, condition: %d", control, condition);
+  log_message(LOG_DEBUG, data);
   return condition;
 }
 
@@ -166,23 +173,27 @@ void run_cmd() {
   union short_ushort rel;
   rel.us = (cmd & 0xFFFF);
 
-  // Check for jumps
-  uint8_t check = condition(control);
 
+  char buffer[100];
   switch (typ) {
     case CPU_TYPE_JMP_REL: {
-      if (check) {
+      if (condition(control)) {
         union int_uint iui;
         
         iui.ui = instruction_pointer();
         iui.i += (rel.s * 4);
+        sprintf(buffer, "Running relative jump, ip: %x, relative: %d", instruction_pointer(), iui.i);
+        log_message(LOG_DEBUG, buffer);
+
         set_instruction_pointer(iui.ui);
         return;
       }
       break;
     }
     case CPU_TYPE_JMP_REG: {
-      if (check) {
+      if (condition(control)) {
+        sprintf(buffer, "register jump to address: %d", d1);
+        log_message(LOG_DEBUG, buffer);
         set_instruction_pointer(d1);
         return;
       }
@@ -190,27 +201,34 @@ void run_cmd() {
     }
     case CPU_TYPE_REGISTER: {
       aluop(d1, d2, control, &d3);
+      sprintf(buffer, "Running ALU OP: d1: %d, d2: %d, control: %x, register3: %d, d3: %d", d1, d2, control, reg3, d3);
+      log_message(LOG_DEBUG, buffer);
       write_back(reg3, d3);
       break;
     }
     case CPU_TYPE_IMM: {
       aluop(d1, d2, control, &d3);
+      sprintf(buffer, "Running Immediate type: d1: %d. d2: %d, control: %d, reg3: %d, imm: %d", d1, d2 ,control, reg3, imm);
+      log_message(LOG_DEBUG, buffer);
       write_back(reg3, imm);
       break;
     }
     case CPU_TYPE_MEM_READ: {
       aluop(d1, d2, control, &d3);
       d3 = read_mem(d1);
+      sprintf(buffer, "Reading memory at address: %d, value: %d, r1: %d, r3: %d", d1, d3, reg1, reg3);
+      log_message(LOG_DEBUG, buffer);
       write_back(reg3, d3);
       break;
     }
     case CPU_TYPE_MEM_WRITE: {
       aluop(d1, d2, control, &d3);
+      sprintf(buffer, "Writing memory to address: %d, value: %d", d1, d2);
+      log_message(LOG_DEBUG, buffer);
       write_mem(d1, d2);
       break;
     }
     default: {
-      char buffer[100];
       sprintf(buffer, "Unknown CPU Instruction: %d", typ);
       log_message(LOG_DEBUG, buffer);
       break;

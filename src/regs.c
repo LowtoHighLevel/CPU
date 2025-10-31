@@ -7,7 +7,7 @@
 #define NUM_REGISTERS 32
 data_t regs[NUM_REGISTERS - 1];
 
-uint32_t flags;
+uint32_t flags = 0;
 
 void reg_out_bounds(const char* type, uint8_t reg) {
   if (reg >= NUM_REGISTERS) {
@@ -39,11 +39,19 @@ void write_reg(uint8_t reg, data_t data) {
 }
 
 uint32_t read_flag(uint8_t flag) {
-  return (flags >> flag) & 0x1;
+  char buf[100];
+  sprintf(buf, "Reading flag: %d as  %u, flags: %x", flag, (flags >> flag) & 0b1, flags);
+  log_message(LOG_DEBUG, buf);
+  return (flags >> flag) & 0b1;
 }
 
 void write_flag(uint8_t flag, uint8_t data) {
-    flags &= (0xFFFF & ((data & 0x1) << flag));
+  flags  &= ~(0b1u << flag);
+  flags |= ((uint32_t)(data & 0b1u) << flag);
+  char buf[100];
+  sprintf(buf, "Setting flag: %d to  %u, flags: %x", flag, data, flags);
+  log_message(LOG_DEBUG, buf);
+
 }
 
 uint32_t get_flags() {

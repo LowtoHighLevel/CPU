@@ -110,7 +110,7 @@ void alu_op(bit* a, bit* b, int length, bit* out, uint8_t control) {
   switch (operation) {
     case ALU_OP_ROR: {
       bit carry = read_flag(FLAG_CARRY);
-      for (uint32_t i = length - 1; i >= 0; i--) {
+      for (int i = length - 1; i >= 0; i--) {
         out[i] = carry;
         carry = a[i];
       }
@@ -119,7 +119,7 @@ void alu_op(bit* a, bit* b, int length, bit* out, uint8_t control) {
     }
     case ALU_OP_ROL: {
       bit carry = read_flag(FLAG_CARRY);
-      for (uint32_t i = 0; i < length; i++) {
+      for (int i = 0; i < length; i++) {
         out[i] = carry;
         carry = a[i];
       }
@@ -131,7 +131,7 @@ void alu_op(bit* a, bit* b, int length, bit* out, uint8_t control) {
       bit prev_carry = carry_in; // carry from previous iteration
       
       // iterate through each bit and run an alu operation on it
-      for (uint32_t i = 0; i < length - 1; i++) {
+      for (int i = 0; i < length; i++) {
 
         // Invert B
         if (invert_b) {
@@ -150,7 +150,7 @@ void alu_op(bit* a, bit* b, int length, bit* out, uint8_t control) {
       break;
     }
   }
-  write_flag(FLAG_NEG, b[length -1]);
+  write_flag(FLAG_NEG, out[length-1]);
 }
 
 #ifdef TEST_ALU
@@ -245,6 +245,37 @@ int main(int argc, char* argv[]) {
     sprintf(test_success_buf, "test: %s succeeded!\n", names[i]);
     log_message(LOG_INFO, test_success_buf);
   }
+
+   for (uint64_t x = 0; x < (1000); x++) {
+          write_flag(FLAG_CARRY, 0);
+          bit a[TEST_ALU_BITLENGTH], b[TEST_ALU_BITLENGTH], c[TEST_ALU_BITLENGTH];
+          num_to_bit(x, a, TEST_ALU_BITLENGTH);
+          num_to_bit(0, b, TEST_ALU_BITLENGTH);
+          alu_op(a, b, TEST_ALU_BITLENGTH, c, ALU_OP_ROR);
+          uint64_t num = bit_to_num(c, TEST_ALU_BITLENGTH);
+          if ( num != x >> 1) {
+                char buffer[100];
+                sprintf(buffer, "rotate right with x: %lu, got %lu, expected %lu", x, num, x >> 1);
+                log_message(LOG_ERROR, buffer);
+          }
+    }
+    log_message(LOG_INFO, "test: ror succeeded!\n");
+
+    for (uint64_t x = 0; x < (1000); x++) {
+          write_flag(FLAG_CARRY, 0);
+          bit a[TEST_ALU_BITLENGTH], b[TEST_ALU_BITLENGTH], c[TEST_ALU_BITLENGTH];
+          num_to_bit(x, a, TEST_ALU_BITLENGTH);
+          num_to_bit(0, b, TEST_ALU_BITLENGTH);
+          alu_op(a, b, TEST_ALU_BITLENGTH, c, ALU_OP_ROL);
+          uint64_t num = bit_to_num(c, TEST_ALU_BITLENGTH);
+          if ( num != x << 1) {
+                char buffer[100];
+                sprintf(buffer, "rotate left with x: %lu, got %lu, expected: %lu", x, num, x << 1);
+                log_message(LOG_ERROR, buffer);
+          }
+    }
+    log_message(LOG_INFO, "test: rol succeeded!\n");
+
 
 }
 #endif

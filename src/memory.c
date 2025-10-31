@@ -2,24 +2,25 @@
 #include <stdio.h>
 #include <defs.h>
 #include <stdint.h>
+#include <util.h>
 
 #ifndef LAYOUT
 #define LAYOUT 0
 #endif
 
 #if LAYOUT == 1
-  #define ROM_SIZE 1024 * 2
-  #define RAM_SIZE 1024 * 8
-  #define ROM_ADDR STARTVEC - ROM_SIZE + 4
-  #define RAM_ADDR 0
-  #define CHAROUT_ADDR RAM_ADDR + RAM_SIZE
+  #define ROM_SIZE (1024 * 2)
+  #define RAM_SIZE (1024 * 8)
+  #define ROM_ADDR (STARTVEC - ROM_SIZE + 4)
+  #define RAM_ADDR (0)
+  #define CHAROUT_ADDR (RAM_ADDR + RAM_SIZE)
  
 #else
-  #define ROM_SIZE 1024 * 4
-  #define RAM_SIZE 1024 * 8
-  #define ROM_ADDR 0
-  #define RAM_ADDR ROM_ADDR + ROM_SIZE
-  #define CHAROUT_ADDR 1024 * 16
+  #define ROM_SIZE (1024 * 4)
+  #define RAM_SIZE (1024 * 8)
+  #define ROM_ADDR (0)
+  #define RAM_ADDR (ROM_ADDR + ROM_SIZE)
+  #define CHAROUT_ADDR (1024 * 16)
 
 #endif
 
@@ -45,7 +46,7 @@ void write_mem(data_t addr, data_t val) {
   union int_to_char data;
   data.ic_val = val;
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < sizeof(data_t); i++) {
     write_char_mem(addr + i, data.ic_char[i]);
   }
 }
@@ -70,7 +71,7 @@ data_t read_mem(data_t addr) {
 
 void write_char_mem(data_t addr, uint8_t val) {
   if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
-    ram[(addr - RAM_ADDR)] = val;
+    ram[addr - RAM_ADDR] = val;
   }
   #if LAYOUT == 0
   else if (addr == CHAROUT_ADDR) {
@@ -80,13 +81,12 @@ void write_char_mem(data_t addr, uint8_t val) {
   #endif
 }   
 
-unsigned char read_char_mem(data_t addr) {
+uint8_t read_char_mem(data_t addr) {
 
-
-  if (addr < (ROM_SIZE) && addr >= ROM_ADDR) {
-    return rom[addr];
+  if (addr < (ROM_SIZE + ROM_ADDR) && addr >= ROM_ADDR) {
+    return rom[addr - ROM_ADDR];
   } else if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
-    return ram[(addr - (RAM_ADDR))];
+    return ram[addr - RAM_ADDR];
   }
 
   return 0;
