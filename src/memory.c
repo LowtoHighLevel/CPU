@@ -14,9 +14,8 @@
   #define ROM_ADDR (STARTVEC - ROM_SIZE + 4)
   #define RAM_ADDR (0)
   #define CHAROUT_ADDR (RAM_ADDR + RAM_SIZE)
- 
 #else
-  #define ROM_SIZE (1024 * 4)
+  #define ROM_SIZE (1024 * 6)
   #define RAM_SIZE (1024 * 8)
   #define ROM_ADDR (0)
   #define RAM_ADDR (ROM_ADDR + ROM_SIZE)
