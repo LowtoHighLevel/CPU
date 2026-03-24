@@ -106,6 +106,12 @@ uint8_t read_char_mem(data_t addr) {
     return ram[addr - RAM_ADDR];
   } else
   #endif
+  #ifdef CHARDEV
+  if (addr == (CHARDEV_ADDR)) {
+    char ch;
+    scanf("%c", &ch);
+    return (uint8_t) ch;
+  #endif
 
   return 0;
 }
