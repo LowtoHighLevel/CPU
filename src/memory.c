@@ -4,28 +4,39 @@
 #include <stdint.h>
 #include <util.h>
 
-#ifndef LAYOUT
-#define LAYOUT 0
-#endif
+#define ROM
+#define RAM
+#define CHARDEV
 
-#if LAYOUT == 1
-  #define ROM_SIZE (1024 * 2)
-  #define RAM_SIZE (1024 * 8)
-  #define ROM_ADDR (STARTVEC - ROM_SIZE + 4)
-  #define RAM_ADDR (0)
-  #define CHAROUT_ADDR (RAM_ADDR + RAM_SIZE)
-#else
-  #define ROM_SIZE (1024 * 6)
-  #define RAM_SIZE (1024 * 8)
+#ifdef ROM
+ #ifndef ROM_SIZE
+  #define ROM_SIZE (1024 * 7)
+ #endif
+ #ifndef ROM_ADDR
   #define ROM_ADDR (0)
-  #define RAM_ADDR (ROM_ADDR + ROM_SIZE)
-  #define CHAROUT_ADDR (1024 * 16)
-
+ #endif
+unsigned char rom[ROM_SIZE];
 #endif
 
-
-unsigned char rom[ROM_SIZE];
+#ifdef RAM
+ #ifndef RAM_SIZE
+  #define RAM_SIZE (1024 * 8)
+ #endif
+ #ifndef RAM_ADDR
+  #ifdef ROM
+    #define RAM_ADDR (ROM_ADDR + ROM_SIZE)
+  #else
+    #define RAM_ADDR (0)
+  #endif
+ #endif
 unsigned char ram[RAM_SIZE];
+#endif
+
+#ifdef CHARDEV
+  #ifndef CHARDEV_ADDR
+    #define CHARDEV_ADDR (1024 * 16)
+  #endif
+#endif
 
 unsigned char scan_val;
 
@@ -69,11 +80,14 @@ data_t read_mem(data_t addr) {
 }
 
 void write_char_mem(data_t addr, uint8_t val) {
+  #ifdef RAM
   if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     ram[addr - RAM_ADDR] = val;
   }
-  #if LAYOUT == 0
-  else if (addr == CHAROUT_ADDR) {
+  #endif
+
+  #ifdef CHARDEV
+  else if (addr == CHARDEV_ADDR) {
     // Actual output, not a log
     printf("%c", (char)val);
   }
@@ -82,17 +96,25 @@ void write_char_mem(data_t addr, uint8_t val) {
 
 uint8_t read_char_mem(data_t addr) {
 
+  #ifdef ROM
   if (addr < (ROM_SIZE + ROM_ADDR) && addr >= ROM_ADDR) {
     return rom[addr - ROM_ADDR];
-  } else if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
+  } else
+  #endif
+  #ifdef RAM
+  if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     return ram[addr - RAM_ADDR];
-  }
+  } else
+  #endif
 
   return 0;
 }
 
+
 void write_rom_char(data_t addr, uint8_t data) {
-  rom[addr] = data;
+  #ifdef ROM
+    rom[addr] = data;
+  #endif
 }
 
 void write_rom(data_t addr, instr_t data) {
@@ -102,3 +124,4 @@ void write_rom(data_t addr, instr_t data) {
     write_rom_char(addr + i, conv.ic_char[i]);
   }
 }
+
