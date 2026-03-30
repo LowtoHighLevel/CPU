@@ -37,6 +37,22 @@ unsigned char ram[RAM_SIZE];
     #define DEV_CHAR_ADDR (1024 * 16)
   #endif
 #endif
+BUS_DEV* devices[128];
+
+int register_bus_device(BUS_DEV* dev) {
+  size_t idx = 0;
+  while (devices[idx] != 0) {
+    idx++;
+  }
+  devices[idx] = dev;
+  return idx;
+}
+
+int unregister_bus_device(int idx) {
+  if ((idx >= 128 && idx < 0) || devices[idx] == 0) return -1;
+  devices[idx] = 0;
+  return 0;
+}
 
 unsigned char scan_val;
 

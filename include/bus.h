@@ -5,6 +5,17 @@
 #include <stdint.h>
 
 
+typedef struct bus_dev_t {
+    data_t address;
+    size_t length;
+    void (*write_char)(size_t offset, uint8_t val);
+    uint8_t (*read_char)(size_t offset);
+} BUS_DEV;
+
+int register_bus_device(BUS_DEV* dev);
+
+int unregister_bus_device(int idx);
+
 /**
  * Writes a value to an address
  * 
