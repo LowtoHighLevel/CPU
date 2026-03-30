@@ -57,20 +57,4 @@ void write_char_mem(data_t addr, uint8_t val);
  */
 uint8_t read_char_mem(data_t addr);
 
-/**
- * Writes a character to an address that is otherwise inaccessible (for program setup)
- * 
- * addr - adddress to write to
- * data - data to write
- */
-void write_rom_char(data_t addr, uint8_t data);
-
-
-/**
- * Writes to an address that is otherwise inaccessible (for program setup)
- * 
- * addr - adddress to write to
- * data - data to write
- */
-void write_rom(data_t addr, instr_t data);
 #endif
