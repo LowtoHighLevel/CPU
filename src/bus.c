@@ -1,14 +1,14 @@
-#include <mem.h>
+#include <bus.h>
 #include <stdio.h>
 #include <defs.h>
 #include <stdint.h>
 #include <util.h>
 
-#define ROM
-#define RAM
-#define CHARDEV
+//#define DEV_ROM
+//#define DEV_RAM
+//#define DEV_CHAR
 
-#ifdef ROM
+#ifdef DEV_ROM
  #ifndef ROM_SIZE
   #define ROM_SIZE (1024 * 7)
  #endif
@@ -18,12 +18,12 @@
 unsigned char rom[ROM_SIZE];
 #endif
 
-#ifdef RAM
+#ifdef DEV_RAM
  #ifndef RAM_SIZE
   #define RAM_SIZE (1024 * 8)
  #endif
  #ifndef RAM_ADDR
-  #ifdef ROM
+  #ifdef DEV_ROM
     #define RAM_ADDR (ROM_ADDR + ROM_SIZE)
   #else
     #define RAM_ADDR (0)
@@ -32,9 +32,9 @@ unsigned char rom[ROM_SIZE];
 unsigned char ram[RAM_SIZE];
 #endif
 
-#ifdef CHARDEV
-  #ifndef CHARDEV_ADDR
-    #define CHARDEV_ADDR (1024 * 16)
+#ifdef DEV_CHAR
+  #ifndef DEV_CHAR_ADDR
+    #define DEV_CHAR_ADDR (1024 * 16)
   #endif
 #endif
 
@@ -80,14 +80,14 @@ data_t read_mem(data_t addr) {
 }
 
 void write_char_mem(data_t addr, uint8_t val) {
-  #ifdef RAM
+  #ifdef DEV_RAM
   if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     ram[addr - RAM_ADDR] = val;
   }
   #endif
 
-  #ifdef CHARDEV
-  else if (addr == CHARDEV_ADDR) {
+  #ifdef DEV_CHAR
+  else if (addr == DEV_CHAR_ADDR) {
     // Actual output, not a log
     printf("%c", (char)val);
   }
@@ -96,21 +96,22 @@ void write_char_mem(data_t addr, uint8_t val) {
 
 uint8_t read_char_mem(data_t addr) {
 
-  #ifdef ROM
+  #ifdef DEV_ROM
   if (addr < (ROM_SIZE + ROM_ADDR) && addr >= ROM_ADDR) {
     return rom[addr - ROM_ADDR];
   } else
   #endif
-  #ifdef RAM
+  #ifdef DEV_RAM
   if (addr < (RAM_ADDR + RAM_SIZE) && addr >= RAM_ADDR) {
     return ram[addr - RAM_ADDR];
   } else
   #endif
-  #ifdef CHARDEV
-  if (addr == (CHARDEV_ADDR)) {
+  #ifdef DEV_CHAR
+  if (addr == (DEV_CHAR_ADDR)) {
     char ch;
     scanf("%c", &ch);
     return (uint8_t) ch;
+  }
   #endif
 
   return 0;
@@ -118,7 +119,7 @@ uint8_t read_char_mem(data_t addr) {
 
 
 void write_rom_char(data_t addr, uint8_t data) {
-  #ifdef ROM
+  #ifdef DEV_ROM
     rom[addr] = data;
   #endif
 }

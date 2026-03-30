@@ -3,7 +3,7 @@
 #include <defs.h>
 #include <regs.h>
 #include <alu.h>
-#include <mem.h>
+#include <bus.h>
 #include <util.h>
 
 /**

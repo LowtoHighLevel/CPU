@@ -2,7 +2,7 @@
 #include <defs.h>
 #include <cpu.h>
 #include <regs.h>
-#include <mem.h>
+#include <bus.h>
 #include <util.h>
 #include <string.h>
 #include <stdint.h>

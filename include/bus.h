@@ -1,8 +1,9 @@
-#ifndef __MEM_H
-#define __MEM_H
+#ifndef __BUS_H
+#define __BUS_H
 
 #include <defs.h>
 #include <stdint.h>
+
 
 /**
  * Writes a value to an address
