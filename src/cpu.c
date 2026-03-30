@@ -159,22 +159,30 @@ void init() {
 }
 
 void run_cmd() {
+  char buffer[100];
   // Load the instruction and parse it
   instr_t cmd = read_instruction(instruction_pointer());
+  sprintf(buffer, "cmd: %x\n", cmd);
+  log_message(LOG_DEBUG, buffer);
+
   uint8_t typ, control, reg1, reg2, reg3;
   data_t imm;
   parse_op(cmd, &typ, &control, &reg1, &reg2, &reg3, &imm);
+  sprintf(buffer, "Parsed command: {typ: %x, control: %x, reg1: %d, reg2: %d, reg3: %d, imm: %d}\n", typ, control, reg1, reg2, reg3, imm);
+  log_message(LOG_DEBUG, buffer);
 
   // Read any registers that are needed
   data_t d1, d2, d3;
   read_data(reg1, reg2, &d1, &d2);
+
+  sprintf(buffer, "Data read: {reg1: %d, d1: %x, reg2: %d, d2: %x}\n", reg1, d1, reg2, d2);
+  log_message(LOG_DEBUG, buffer);
 
   // Get relative address
   union short_ushort rel;
   rel.us = (cmd & 0xFFFF);
 
 
-  char buffer[100];
   switch (typ) {
     case CPU_TYPE_JMP_REL: {
       if (condition(control)) {
