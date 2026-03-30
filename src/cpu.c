@@ -183,6 +183,7 @@ void run_cmd() {
   rel.us = (cmd & 0xFFFF);
 
 
+
   switch (typ) {
     case CPU_TYPE_JMP_REL: {
       if (condition(control)) {

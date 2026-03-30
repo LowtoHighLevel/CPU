@@ -15,6 +15,10 @@ SRCS=src/main.c \
      src/cpu.c \
      src/bus.c \
 	 src/util.c \
+	 src/dev/dev.c \
+	 src/dev/char.c \
+	 src/dev/ram.c \
+	 src/dev/rom.c \
 
 
 
