@@ -1,9 +1,7 @@
 #ifndef __DEV_H
 #define __DEV_H
 
-#define DEV_ROM
-#define DEV_RAM
-#define DEV_CHAR
+#include <defs.h>
 
 #ifdef DEV_ROM
 #include <dev/rom.h>

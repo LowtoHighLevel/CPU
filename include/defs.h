@@ -3,6 +3,16 @@
 
 #include <stdint.h>
 
+#ifndef DEV
+#define DEV_LEGACY
+#endif
+
+#ifdef DEV_LEGACY
+#define DEV_ROM
+#define DEV_RAM
+#define DEV_CHAR
+#endif
+
 #ifndef CPUTYP
 #define CPUTYP 32
 #endif
