@@ -73,7 +73,7 @@ void write_char_mem(data_t addr, uint8_t val) {
 
     BUS_DEV* device = devices[i];
 
-    sprintf(log_msg, "Attempting to write %c to: %x. Device info: {address: %x, length: %d}\n", val, addr, device->address, device->length);
+    sprintf(log_msg, "Attempting to write %c to: %x. Device info: {address: %x, length: %zu}\n", val, addr, device->address, device->length);
     log_message(LOG_DEBUG, log_msg);
     if (addr < (device->address + device->length) && addr >= device->address) {
       sprintf(log_msg, "Writing %c to device\n", val);
