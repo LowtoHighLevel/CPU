@@ -1,6 +1,10 @@
 #ifndef __DEV_ROM_H
 #define __DEV_ROM_H
 
+#include <dev/dev.h>
+
+#ifdef DEV_ROM
+
 #include <stdint.h>
 #include <defs.h>
 
@@ -13,6 +17,7 @@
 
 void rom_init();
 
+#endif
 /**
  * Writes a character to an address that is otherwise inaccessible (for program setup)
  * 

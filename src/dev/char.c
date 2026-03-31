@@ -1,4 +1,6 @@
 #include <dev/char.h>
+
+#ifdef DEV_CHAR
 #include <bus.h>
 #include <stdio.h>
 
@@ -22,3 +24,4 @@ void char_init() {
     char_device.write_char = char_write;
     register_bus_device(&char_device);
 }
+#endif

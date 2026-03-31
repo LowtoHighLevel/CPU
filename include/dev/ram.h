@@ -1,9 +1,11 @@
 #ifndef __DEV_RAM_H
 #define __DEV_RAM_H
 
+#include <dev/dev.h>
+
+#ifdef DEV_RAM
 #include <stdint.h>
 #include <defs.h>
-#include <dev/dev.h>
 #include <dev/rom.h>
 
 #ifndef RAM_SIZE
@@ -18,4 +20,5 @@
 #endif
 void ram_init();
 
+#endif
 #endif

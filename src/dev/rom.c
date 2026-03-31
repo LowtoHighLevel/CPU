@@ -1,4 +1,6 @@
 #include <dev/rom.h>
+
+#ifdef DEV_ROM
 #include <bus.h>
 #include <stdio.h>
 #include <util.h>
@@ -32,14 +34,19 @@ union int_to_char {
   uint8_t ic_char[sizeof(data_t)];
 };
 
+#endif
 void write_rom_char(data_t addr, uint8_t data) {
+    #ifdef DEV_ROM
     rom[addr] = data;
+    #endif
 }
 
 void write_rom(data_t addr, instr_t data) {
-  union int_to_char conv;
-  conv.ic_val = data;
-  for (int i = 0; i < sizeof(instr_t); i++) {
-    write_rom_char(addr + i, conv.ic_char[i]);
-  }
+    #ifdef DEV_ROM
+        union int_to_char conv;
+        conv.ic_val = data;
+        for (int i = 0; i < sizeof(instr_t); i++) {
+            write_rom_char(addr + i, conv.ic_char[i]);
+        }
+    #endif
 }

@@ -1,6 +1,8 @@
-#include <dev/dev.h>
+
 #include <dev/ram.h>
-#include <dev/rom.h>
+
+#ifdef DEV_RAM
+#include <dev/dev.h>
 #include <bus.h>
 
 uint8_t ram[RAM_SIZE];
@@ -28,3 +30,5 @@ void ram_init() {
     ram_device.write_char = write_ram;
     register_bus_device(&ram_device);
 }
+
+#endif
