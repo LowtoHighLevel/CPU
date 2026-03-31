@@ -8,6 +8,7 @@
 unsigned char rom[ROM_SIZE];
 
 BUS_DEV rom_device;
+int rom_dev_idx;
 
 void write_rom_dummy(size_t offset, uint8_t val) {
     return;
@@ -25,8 +26,7 @@ void rom_init() {
     rom_device.length = ROM_SIZE;
     rom_device.read_char = read_rom_char;
     rom_device.write_char = write_rom_dummy;
-    register_bus_device(&rom_device);
-    log_message(LOG_DEBUG, "Initialized ROM.\n");
+    rom_dev_idx = register_bus_device(&rom_device);
 }
 
 union int_to_char {

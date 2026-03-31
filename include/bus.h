@@ -5,6 +5,9 @@
 #include <stdint.h>
 
 
+/**
+ * Bus Device
+ */
 typedef struct bus_dev_t {
     data_t address;
     size_t length;
@@ -12,8 +15,19 @@ typedef struct bus_dev_t {
     uint8_t (*read_char)(size_t offset);
 } BUS_DEV;
 
+/**
+ * Registers a bus device
+ * 
+ * dev - Bus device to register
+ * returns - index to device
+ */
 int register_bus_device(BUS_DEV* dev);
 
+/**
+ * Unregisters a bus device
+ * 
+ * idx - index of device.
+ */
 int unregister_bus_device(int idx);
 
 /**

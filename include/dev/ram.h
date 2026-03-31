@@ -18,6 +18,10 @@
         #define RAM_ADDR (0)
     #endif
 #endif
+
+/**
+ * Initializes RAM
+ */
 void ram_init();
 
 #endif

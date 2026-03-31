@@ -15,6 +15,9 @@
    #define ROM_ADDR (0)
 #endif
 
+/**
+ * Initializes ROM
+ */
 void rom_init();
 
 #endif

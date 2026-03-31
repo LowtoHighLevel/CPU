@@ -8,6 +8,7 @@
 uint8_t ram[RAM_SIZE];
 
 BUS_DEV ram_device;
+int ram_dev_idx;
 
 void write_ram(size_t offset, uint8_t data) {
     if (offset >= 0 && offset < RAM_SIZE) {
@@ -28,7 +29,7 @@ void ram_init() {
     ram_device.length = RAM_SIZE;
     ram_device.read_char = read_ram;
     ram_device.write_char = write_ram;
-    register_bus_device(&ram_device);
+    ram_dev_idx = register_bus_device(&ram_device);
 }
 
 #endif

@@ -6,7 +6,7 @@
 
 
 
-BUS_DEV* devices[128];
+BUS_DEV* devices[128]; // All bus devices
 
 
 char log_msg[100];

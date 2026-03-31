@@ -8,6 +8,9 @@
     #define DEV_CHAR_ADDR (1024 * 16)
 #endif
 
+/**
+ * Initializes Character Device
+ */
 void char_init();
 
 #endif

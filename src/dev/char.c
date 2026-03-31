@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 BUS_DEV char_device;
+int char_dev_idx;
 
 
 char read_val;
@@ -22,6 +23,6 @@ void char_init() {
     char_device.length = 1;
     char_device.read_char = char_read;
     char_device.write_char = char_write;
-    register_bus_device(&char_device);
+    char_dev_idx = register_bus_device(&char_device);
 }
 #endif

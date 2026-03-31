@@ -15,6 +15,9 @@
 #include <dev/char.h>
 #endif
 
+/**
+ * Initializes Devices
+ */
 void init_devices();
 
 #endif
