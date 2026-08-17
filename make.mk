@@ -13,8 +13,12 @@ SRCS=src/main.c \
      src/alu.c \
      src/regs.c \
      src/cpu.c \
-     src/memory.c \
+     src/bus.c \
 	 src/util.c \
+	 src/dev/dev.c \
+	 src/dev/char.c \
+	 src/dev/ram.c \
+	 src/dev/rom.c \
 
 
 
