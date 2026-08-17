@@ -1,0 +1,4 @@
+#!/bin/bash
+${CC:=zig cc} ./configure.c -o ./configure.exe
+./configure.exe $@
+rm -f configure.exe configure.pdb
