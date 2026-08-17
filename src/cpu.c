@@ -43,6 +43,7 @@ void parse_op(instr_t op, uint8_t* typ, uint8_t* control, uint8_t* reg1, uint8_t
       *reg2 = 0;
       *reg3 = (uint8_t)((op >> 24) & 0b11111);
       *imm = (op & 0xFFFFFF);
+      if (*imm & 0x800000) *imm = *imm |= 0xFF000000;
       break;
     }
     case CPU_TYPE_MEM_READ: {
