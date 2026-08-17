@@ -2,11 +2,13 @@
 #include <defs.h>
 #include <cpu.h>
 #include <regs.h>
-#include <mem.h>
+#include <bus.h>
 #include <util.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <dev/dev.h>
+#include <dev/rom.h>
 
 /**
  * Write a value to rom and iter the address.
@@ -80,6 +82,9 @@ int main(int argc, char * argv[]) {
     }
 
   }
+
+  // Initialize bus devices
+  init_devices();
 
   // Write program to ROM.
   for (int32_t i = 0; i < num_cmds; i++) {

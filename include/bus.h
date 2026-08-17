@@ -1,8 +1,34 @@
-#ifndef __MEM_H
-#define __MEM_H
+#ifndef __BUS_H
+#define __BUS_H
 
 #include <defs.h>
 #include <stdint.h>
+#include <stddef.h>
+
+/**
+ * Bus Device
+ */
+typedef struct bus_dev_t {
+    data_t address;
+    size_t length;
+    void (*write_char)(size_t offset, uint8_t val);
+    uint8_t (*read_char)(size_t offset);
+} BUS_DEV;
+
+/**
+ * Registers a bus device
+ * 
+ * dev - Bus device to register
+ * returns - index to device
+ */
+int register_bus_device(BUS_DEV* dev);
+
+/**
+ * Unregisters a bus device
+ * 
+ * idx - index of device.
+ */
+int unregister_bus_device(int idx);
 
 /**
  * Writes a value to an address
@@ -45,20 +71,4 @@ void write_char_mem(data_t addr, uint8_t val);
  */
 uint8_t read_char_mem(data_t addr);
 
-/**
- * Writes a character to an address that is otherwise inaccessible (for program setup)
- * 
- * addr - adddress to write to
- * data - data to write
- */
-void write_rom_char(data_t addr, uint8_t data);
-
-
-/**
- * Writes to an address that is otherwise inaccessible (for program setup)
- * 
- * addr - adddress to write to
- * data - data to write
- */
-void write_rom(data_t addr, instr_t data);
 #endif
